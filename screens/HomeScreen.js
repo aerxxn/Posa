@@ -65,22 +65,22 @@ export default function HomeScreen({ navigation, route }) {
             </TouchableOpacity>
             <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 16, textAlign: "center" }}>How to Use Posa</Text>
             <Text style={{ fontSize: 16, marginBottom: 10 }}>
-              <Text style={{ fontWeight: "bold" }}>Home Screen:</Text> View all your cats. Tap a cat to see its details. Use the + button to add a new cat. Use the camera or gallery icons to add a cat with a photo.
+              <Text style={{ fontWeight: "bold" }}>Home Screen:</Text> View all your cats in a grid. Tap a cat to see its details. Use the <Text style={{ fontWeight: "bold" }}>+</Text> button to open the add menu. Use the <Text style={{ fontWeight: "bold" }}>📷</Text> or <Text style={{ fontWeight: "bold" }}>🖼️</Text> icons to add a new cat with a photo from your camera or gallery.
             </Text>
             <Text style={{ fontSize: 16, marginBottom: 10 }}>
-              <Text style={{ fontWeight: "bold" }}>Add Cat:</Text> Enter the cat's name, eye color, fur color, and behavior. Add a profile photo. Save to add the cat to your collection.
+              <Text style={{ fontWeight: "bold" }}>Add Cat:</Text> Enter the cat's name and select a profile photo (required). You can also add optional details like eye color, fur color, and behavior. The first encounter is logged automatically with the photo and details you provide.
             </Text>
             <Text style={{ fontSize: 16, marginBottom: 10 }}>
-              <Text style={{ fontWeight: "bold" }}>Cat Details:</Text> View cat info and all encounters. Edit or delete the cat. Add new encounters using the floating buttons.
+              <Text style={{ fontWeight: "bold" }}>Cat Details:</Text> View all info and encounters for a cat. Edit or delete the cat using the pencil and trash icons. Add new encounters using the floating <Text style={{ fontWeight: "bold" }}>+</Text> button, then choose <Text style={{ fontWeight: "bold" }}>📷</Text> or <Text style={{ fontWeight: "bold" }}>🖼️</Text> to log a new encounter with a photo.
             </Text>
             <Text style={{ fontSize: 16, marginBottom: 10 }}>
-              <Text style={{ fontWeight: "bold" }}>Add Encounter:</Text> Take or select a photo, add location and details. Save to log a new encounter for the cat.
+              <Text style={{ fontWeight: "bold" }}>Add Encounter:</Text> Take or select a photo (required), then add optional location and details. Save to log a new encounter for the cat.
             </Text>
             <Text style={{ fontSize: 16, marginBottom: 10 }}>
-              <Text style={{ fontWeight: "bold" }}>Encounters:</Text> Tap an encounter to expand details. Long press the photo to view fullscreen. Edit or delete encounters as needed.
+              <Text style={{ fontWeight: "bold" }}>Encounters:</Text> Tap an encounter to expand and see more details. Long press the photo to view it fullscreen. You can delete encounters using the trash icon (edit is not yet available).
             </Text>
             <Text style={{ fontSize: 16, marginBottom: 10 }}>
-              <Text style={{ fontWeight: "bold" }}>Navigation:</Text> Use the navigation bar to switch screens. All navigation bars have a consistent color for easy recognition.
+              <Text style={{ fontWeight: "bold" }}>Navigation:</Text> Use the navigation bar at the top to switch screens. All navigation bars use the same color for consistency.
             </Text>
           </View>
         </View>

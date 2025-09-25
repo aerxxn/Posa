@@ -70,6 +70,21 @@ export const CatProvider = ({ children }) => {
     saveCats(updatedCats);
   };
 
+
+  // Update an existing encounter for a cat
+  const updateEncounter = (catId, encounterIndex, updatedEncounter) => {
+    const updatedCats = cats.map(cat => {
+      if (cat.id === catId) {
+        const updatedEncounters = cat.encounters.map((item, idx) =>
+          idx === encounterIndex ? updatedEncounter : item
+        );
+        return { ...cat, encounters: updatedEncounters };
+      }
+      return cat;
+    });
+    saveCats(updatedCats);
+  };
+
   // Add this new function to handle encounter deletion
   const deleteEncounter = (catId, encounterIndex) => {
     const updatedCats = cats.map(cat => {
@@ -90,11 +105,12 @@ export const CatProvider = ({ children }) => {
         cats,
         loading,
         error,
-        addCat,
-        deleteCat,
-        updateCat,
-        addEncounter,
-        deleteEncounter, // Add the new function to the value
+  addCat,
+  deleteCat,
+  updateCat,
+  addEncounter,
+  updateEncounter, // Add the update encounter function
+  deleteEncounter,
       }}
     >
       {children}

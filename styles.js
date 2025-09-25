@@ -147,7 +147,12 @@ detailImage: {
     color: colors.text,
   },
   inputMultiline: {
-    height: 100,
+    height: 50,
+  },
+
+  detailsInput: {
+    height: 90,
+    textAlignVertical: 'top',
   },
   button: {
     backgroundColor: colors.primary,
@@ -277,6 +282,7 @@ detailImage: {
   },
   encounterInfo: {
     flex: 1,
+    justifyContent: 'center',
   },
   encounterTitle: {
     fontSize: 16,
@@ -304,10 +310,12 @@ detailTitle: {
   color: colors.text,
 },
   encounterActionButtons: {
-    flexDirection: "row",
+    flexDirection: "column",
     position: "absolute",
     right: 10,
-    top: 10,
+  top: 5,
+    alignItems: 'center',
+    gap: 8,
   },
   
   // ===== MODALS =====
@@ -330,10 +338,14 @@ detailTitle: {
   },
   modalCard: {
     backgroundColor: colors.cardBackground,
-    padding: 20,
-    borderRadius: 12,
-    width: "85%",
+    padding: 24,
+    borderRadius: 28,
+    width: "75%",
+    minHeight: 320,
     alignSelf: "center",
+  marginTop: 120,
+  marginBottom: 40,
+    justifyContent: 'center',
   },
   modalImage: {
     width: 150,

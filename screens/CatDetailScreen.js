@@ -158,13 +158,13 @@ export default function CatDetailScreen({ route, navigation }) {
   return (
     <View style={styles.container}>
       <FlatList
-        data={cat.encounters}
+        data={[...cat.encounters].slice().reverse()}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item, index }) => (
           <EncounterCard
             encounter={item}
             catId={cat.id}
-            encounterIndex={index}
+            encounterIndex={cat.encounters.length - index - 1}
             onLongPress={() => {
               setCurrentImageUri(item.photo);
               setModalVisible(true);
@@ -219,24 +219,28 @@ export default function CatDetailScreen({ route, navigation }) {
             <TextInput
               style={styles.input}
               placeholder="Name"
+              placeholderTextColor="#7A5C3E"
               value={editableName}
               onChangeText={setEditableName}
             />
             <TextInput
               style={styles.input}
               placeholder="Eye Color"
+              placeholderTextColor="#7A5C3E"
               value={editableEye}
               onChangeText={setEditableEye}
             />
             <TextInput
               style={styles.input}
               placeholder="Fur Color"
+              placeholderTextColor="#7A5C3E"
               value={editableColor}
               onChangeText={setEditableColor}
             />
             <TextInput
               style={[styles.input, styles.inputMultiline]}
               placeholder="Behavior"
+              placeholderTextColor="#7A5C3E"
               value={editableBehavior}
               onChangeText={setEditableBehavior}
               multiline

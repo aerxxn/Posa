@@ -73,10 +73,7 @@ export default function CatDetailScreen({ route, navigation }) {
       "Delete Cat",
       `Are you sure you want to delete ${cat.name}?`,
       [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
+        { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           onPress: () => {
@@ -89,29 +86,60 @@ export default function CatDetailScreen({ route, navigation }) {
     );
   };
 
+  // Small helper used by Edit modal to pick photo
   const handleImagePicker = async (setImage) => {
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-    });
-    if (!res.canceled && res.assets?.[0]) {
-      setImage(res.assets[0].uri);
+    try {
+      const res = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+      });
+      if (!res.canceled && res.assets?.[0]) {
+        setImage(res.assets[0].uri);
+      }
+    } catch (e) {
+      Alert.alert("Error", "Failed to open image picker.");
     }
   };
 
-  const handleCameraPicker = async (setImage) => {
-    const res = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-    });
-    if (!res.canceled && res.assets?.[0]) {
-      setImage(res.assets[0].uri);
-    }
-  };
+  // Pick image (camera or gallery) here in CatDetailScreen then navigate with uri
+  const pickAndNavigateToAddEncounter = async (source) => {
+    try {
+      let res;
+      if (source === "camera") {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("Permission required", "Camera permission is needed to take a photo.");
+          return;
+        }
+        res = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          quality: 1,
+        });
+      } else {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("Permission required", "Gallery access is needed to pick a photo.");
+          return;
+        }
+        res = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          quality: 1,
+        });
+      }
 
-  const navigateToAddEncounter = (source) => {
-    navigation.navigate("AddEncounterScreen", { catId: cat.id, catName: cat.name, imageSource: source });
-    setMenuOpen(false);
+      if (!res.canceled && res.assets?.[0]) {
+        const imageUri = res.assets[0].uri;
+        setMenuOpen(false);
+        navigation.navigate("AddEncounterScreen", {
+          catId: cat.id,
+          catName: cat.name,
+          imageUri, // pass the actual uri
+        });
+      }
+    } catch (err) {
+      console.error("Image picker error:", err);
+      Alert.alert("Error", "Failed to pick image.");
+    }
   };
 
   const renderHeader = () => (
@@ -122,23 +150,26 @@ export default function CatDetailScreen({ route, navigation }) {
           width: 250,
           height: 250,
           borderRadius: 30,
-          alignSelf: 'center',
+          alignSelf: "center",
           marginBottom: 20,
-          resizeMode: 'cover',
+          resizeMode: "cover",
         }}
       />
       <View>
         <View style={styles.catHeader}>
           <Text style={styles.detailTitle}>{cat.name}</Text>
-          <View style={styles.catHeaderActions}>
-            <TouchableOpacity onPress={handleEdit} style={styles.editButton}>
-              <Ionicons name="create-outline" size={24} color={colors.text} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+
+          {/* Right-most stacked actions: trash on top, edit below */}
+          <View style={[styles.catHeaderActions, { flexDirection: "column", right: 10 }]}>
+            <TouchableOpacity onPress={handleDelete} style={{ marginBottom: 8 }}>
               <Ionicons name="trash-outline" size={24} color={colors.danger} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleEdit}>
+              <Ionicons name="create-outline" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
+
         <Text style={styles.detailText}>
           <Text style={{ fontWeight: "bold" }}>Eye Color:</Text> {cat.eye || "N/A"}
         </Text>
@@ -149,6 +180,7 @@ export default function CatDetailScreen({ route, navigation }) {
           <Text style={{ fontWeight: "bold" }}>Behavior:</Text> {cat.behavior || "N/A"}
         </Text>
       </View>
+
       <View style={styles.encounterHeader}>
         <Text style={styles.sectionTitle}>Encounters</Text>
       </View>
@@ -158,13 +190,13 @@ export default function CatDetailScreen({ route, navigation }) {
   return (
     <View style={styles.container}>
       <FlatList
-        data={[...cat.encounters].slice().reverse()}
+        data={[...(cat.encounters || [])].slice().reverse()}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item, index }) => (
           <EncounterCard
             encounter={item}
             catId={cat.id}
-            encounterIndex={cat.encounters.length - index - 1}
+            encounterIndex={(cat.encounters?.length ?? 0) - index - 1}
             onLongPress={() => {
               setCurrentImageUri(item.photo);
               setModalVisible(true);
@@ -175,24 +207,18 @@ export default function CatDetailScreen({ route, navigation }) {
         ListEmptyComponent={
           <Text style={[styles.subtitle, { paddingHorizontal: 10 }]}>No encounters logged.</Text>
         }
-        ItemSeparatorComponent={() => <View />}
-        contentContainerStyle={{ paddingBottom: 80 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       />
+
       {/* Fullscreen Image Modal */}
       <Modal
         visible={modalVisible}
         transparent={true}
         onRequestClose={() => setModalVisible(false)}
       >
-        <TouchableOpacity
-          style={styles.modalTouchable}
-          onPress={() => setModalVisible(false)}
-        >
-          <Image
-            source={{ uri: currentImageUri }}
-            style={styles.fullscreenImage}
-          />
+        <TouchableOpacity style={styles.modalBackground} onPress={() => setModalVisible(false)}>
+          <Image source={{ uri: currentImageUri }} style={[styles.fullscreenImage, { borderRadius: 24 }]} />
         </TouchableOpacity>
       </Modal>
 
@@ -207,82 +233,85 @@ export default function CatDetailScreen({ route, navigation }) {
           style={styles.modalBackground}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <ScrollView contentContainerStyle={styles.modalCard}>
-            <Text style={styles.title}>Edit Cat</Text>
-            <TouchableOpacity onPress={() => handleImagePicker(setEditableImageUri)}>
-              <Image
-                source={{ uri: editableImageUri }}
-                style={styles.modalImage}
+          <View style={styles.modalContainer}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.title}>Edit Cat</Text>
+
+              <TouchableOpacity onPress={() => handleImagePicker(setEditableImageUri)}>
+                <Image source={{ uri: editableImageUri }} style={styles.modalImage} />
+                <Text style={styles.modalChangePhotoText}>Change Photo</Text>
+              </TouchableOpacity>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Name"
+                placeholderTextColor="#7A5C3E"
+                value={editableName}
+                onChangeText={setEditableName}
               />
-              <Text style={styles.modalChangePhotoText}>Change Photo</Text>
-            </TouchableOpacity>
-            <TextInput
-              style={styles.input}
-              placeholder="Name"
-              placeholderTextColor="#7A5C3E"
-              value={editableName}
-              onChangeText={setEditableName}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Eye Color"
-              placeholderTextColor="#7A5C3E"
-              value={editableEye}
-              onChangeText={setEditableEye}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Fur Color"
-              placeholderTextColor="#7A5C3E"
-              value={editableColor}
-              onChangeText={setEditableColor}
-            />
-            <TextInput
-              style={[styles.input, styles.inputMultiline]}
-              placeholder="Behavior"
-              placeholderTextColor="#7A5C3E"
-              value={editableBehavior}
-              onChangeText={setEditableBehavior}
-              multiline
-            />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.button, { backgroundColor: '#aaa', flex: 1, marginRight: 10 }]}
-                onPress={() => setEditModalVisible(false)}
-              >
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button, { flex: 1 }]}
-                onPress={handleSaveEdit}
-              >
-                <Text style={styles.buttonText}>Save</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
+              <TextInput
+                style={styles.input}
+                placeholder="Eye Color"
+                placeholderTextColor="#7A5C3E"
+                value={editableEye}
+                onChangeText={setEditableEye}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Fur Color"
+                placeholderTextColor="#7A5C3E"
+                value={editableColor}
+                onChangeText={setEditableColor}
+              />
+              <TextInput
+                style={[styles.input, styles.inputMultiline]}
+                placeholder="Behavior"
+                placeholderTextColor="#7A5C3E"
+                value={editableBehavior}
+                onChangeText={setEditableBehavior}
+                multiline
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.button, { backgroundColor: "#aaa", flex: 1, marginRight: 10 }]}
+                  onPress={() => setEditModalVisible(false)}
+                >
+                  <Text style={styles.buttonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.button, { flex: 1 }]} onPress={handleSaveEdit}>
+                  <Text style={styles.buttonText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* New FABs */}
+      {/* Floating Buttons */}
       {menuOpen && (
         <>
+          {/* Camera button above main FAB */}
           <TouchableOpacity
-            style={[styles.fab, styles.smallFabCamera]}
-            onPress={() => navigateToAddEncounter("camera")}
+            style={[styles.fab, { bottom: 130 }]}
+            onPress={() => pickAndNavigateToAddEncounter("camera")}
           >
             <Text style={styles.fabText}>📷</Text>
           </TouchableOpacity>
+
+          {/* Gallery button slightly lower & left of main FAB */}
           <TouchableOpacity
-            style={[styles.fab, styles.smallFabGallery]}
-            onPress={() => navigateToAddEncounter("gallery")}
+            style={[styles.fab, { bottom: 60, right: 100 }]}
+            onPress={() => pickAndNavigateToAddEncounter("gallery")}
           >
             <Text style={styles.fabText}>🖼️</Text>
           </TouchableOpacity>
         </>
       )}
 
+      {/* Main FAB */}
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { zIndex: 20, elevation: 20 }]}
         onPress={() => setMenuOpen((p) => !p)}
       >
         <Text style={styles.fabText}>{menuOpen ? "×" : "+"}</Text>

@@ -151,7 +151,7 @@ export default function CatDetailScreen({ route, navigation }) {
           height: 250,
           borderRadius: 30,
           alignSelf: "center",
-          marginBottom: 20,
+          marginBottom: 10,
           resizeMode: "cover",
         }}
       />
@@ -181,7 +181,7 @@ export default function CatDetailScreen({ route, navigation }) {
         </Text>
       </View>
 
-      <View style={styles.encounterHeader}>
+      <View>
         <Text style={styles.sectionTitle}>Encounters</Text>
       </View>
     </View>
@@ -191,12 +191,13 @@ export default function CatDetailScreen({ route, navigation }) {
     <View style={styles.container}>
       <FlatList
         data={[...(cat.encounters || [])].slice().reverse()}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item, index }) => (
+        keyExtractor={(item, index) => item.id?.toString() || index.toString()}        renderItem={({ item, index }) => (
           <EncounterCard
             encounter={item}
             catId={cat.id}
-            encounterIndex={(cat.encounters?.length ?? 0) - index - 1}
+            encounterId={item.id}
+            totalEncounters={cat.encounters?.length ?? 0}
+            displayIndex={index}
             onLongPress={() => {
               setCurrentImageUri(item.photo);
               setModalVisible(true);

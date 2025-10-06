@@ -1,7 +1,5 @@
 // styles.js
 import { StyleSheet, Dimensions } from "react-native";
-import { scale, verticalScale, moderateScale } from "react-native-size-matters";
-
 const { width } = Dimensions.get("window");
 const cardWidth = (width - 48) / 2; // (Screen width - padding) / 2
 
@@ -27,7 +25,7 @@ export default StyleSheet.create({
     padding: 15,
   },
   scrollContainer: {
-    paddingBottom: 100,
+    backgroundColor: colors.background
   },
 
   // ===== TYPOGRAPHY =====
@@ -152,7 +150,7 @@ export default StyleSheet.create({
     resizeMode: "cover",
   },
   detailTitle: {
-    fontSize: 28,
+    fontSize: 35,
     fontWeight: "bold",
     color: colors.text,
     
@@ -163,10 +161,11 @@ export default StyleSheet.create({
     marginBottom: 5,
   },
   sectionTitle: {
-    fontSize: 20,
+    alignSelf: "center",
+    fontSize: 25,
     fontWeight: "bold",
     color: colors.text,
-    marginTop: 20,
+    marginTop: 10,
     marginBottom: 10,
   },
 

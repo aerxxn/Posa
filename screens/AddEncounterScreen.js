@@ -81,6 +81,7 @@ export default function AddEncounterScreen({ navigation, route }) {
     }
 
     const newEncounter = {
+      id: Date.now(), // Unique ID for the encounter
       date: new Date().toLocaleDateString(),
       location: location || "Unknown",
       details: details || "No details provided",

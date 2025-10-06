@@ -17,7 +17,7 @@ import styles, { colors } from "../styles";
 import { useCats } from "../CatContext";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function EncounterCard({ encounter, catId, onLongPress, encounterIndex }) {
+export default function EncounterCard({ encounter, catId, onLongPress, encounterId, totalEncounters, displayIndex }) {
   const { deleteEncounter, updateEncounter } = useCats();
   const [isExpanded, setIsExpanded] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -28,7 +28,7 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
   const handleDelete = () => {
     Alert.alert("Delete Encounter", "Are you sure you want to delete this encounter?", [
       { text: "Cancel", style: "cancel" },
-      { text: "Delete", onPress: () => deleteEncounter(catId, encounterIndex), style: "destructive" },
+      { text: "Delete", onPress: () => deleteEncounter(catId, encounterId), style: "destructive" },
     ]);
   };
 
@@ -44,7 +44,7 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
       Alert.alert("Missing Photo", "Please select a photo for the encounter.");
       return;
     }
-    updateEncounter(catId, encounterIndex, {
+    updateEncounter(catId, encounterId, {
       ...encounter,
       photo: editPhoto,
       location: editLocation,
@@ -67,6 +67,8 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
       Alert.alert("Error", "Failed to open image picker.");
     }
   };
+
+  const encounterNumber = totalEncounters - displayIndex;
 
   return (
     <>
@@ -94,7 +96,7 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
                   marginBottom: 2,
                 }}
               >
-                {`Encounter #${(encounterIndex ?? 0) + 1}`}
+                {`Encounter #${encounterNumber ?? 0}`}
               </Text>
               <Text
                 style={[styles.encounterDate, { textAlign: "center", width: "100%" }]}

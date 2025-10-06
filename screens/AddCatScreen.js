@@ -39,6 +39,7 @@ export default function AddCatScreen({ navigation, route }) {
       imageUri,
       encounters: [
         {
+          id: Date.now(), // Unique ID for the encounter
           date: new Date().toLocaleDateString(),
           location: location || "Unknown",
           details: details || "No details provided",
@@ -54,9 +55,11 @@ export default function AddCatScreen({ navigation, route }) {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0} // Adjust this offset if the view is too low or high
+
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.container}>
+      <ScrollView contentContainerStyle={[styles.scrollContainer]}>
+        <View>
           <Text style={styles.title}>New Cat Acquired!</Text>
 
           {/* Display chosen image */}
@@ -98,7 +101,7 @@ export default function AddCatScreen({ navigation, route }) {
             onChangeText={setColor}
           />
           <TextInput
-            style={[styles.input, styles.inputMultiline]}
+            style={[styles.input]}
             placeholder="Behavior/Personality (optional)"
             placeholderTextColor="#7A5C3E"
             value={behavior}
@@ -115,7 +118,7 @@ export default function AddCatScreen({ navigation, route }) {
             onChangeText={setLocation}
           />
           <TextInput
-            style={[styles.input, styles.detailsInput]}
+            style={[styles.input, styles.detailsInput, styles.inputMultiline]}
             placeholder="Details of Encounter"
             placeholderTextColor="#7A5C3E"
             value={details}

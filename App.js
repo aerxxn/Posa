@@ -61,7 +61,7 @@ export default function App() {
             name="AddCat"
             component={AddCatScreen}
             options={{
-              title: "Add New Cat",
+              title: "New Cat Acquired!",
               headerStyle: {
                 backgroundColor: colors.primary,
               },

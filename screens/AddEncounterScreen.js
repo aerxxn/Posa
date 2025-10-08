@@ -13,7 +13,7 @@ import {
   Dimensions,
 } from "react-native";
 import { useCats } from "../CatContext";
-import styles from "../styles";
+import styles, { colors } from "../styles";
 import * as ImagePicker from "expo-image-picker";
 
 export default function AddEncounterScreen({ navigation, route }) {
@@ -93,17 +93,12 @@ export default function AddEncounterScreen({ navigation, route }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView 
+      contentContainerStyle={[styles.scrollContainer, {flexGrow: 1}]}
+      keyboardShouldPersistTaps="handled"
+      style={{ backgroundColor: colors.background }}>
         <View style={styles.container}>
-          {/* Title */}
-          <Text style={styles.title}>
-            {catName ? `New Encounter — ${catName}` : "New Encounter"}
-          </Text>
-
+      
           {/* Image preview area — displays preselected image above inputs */}
           <TouchableOpacity
             onPress={handleImagePicker}
@@ -157,6 +152,5 @@ export default function AddEncounterScreen({ navigation, route }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
   );
 }

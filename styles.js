@@ -23,6 +23,7 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     padding: 15,
+    marginBottom:40
   },
   scrollContainer: {
     backgroundColor: colors.background
@@ -32,14 +33,13 @@ export default StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 10,
     color: colors.text,
   },
   subtitle: {
     fontSize: 16,
     color: colors.subtleText,
     textAlign: "center",
-    marginVertical: 20,
+    marginVertical: 5,
   },
   fabText: {
     fontSize: 28,
@@ -294,7 +294,9 @@ export default StyleSheet.create({
     fontWeight: "600",
   },
   fullscreenImage: {
-    width: "80%",
-    height: "80%",
-  },
+    width: "90%",
+    height: "90%",
+    resizeMode: "contain", // ✅ keep aspect ratio
+    borderRadius: 24
+  }
 });

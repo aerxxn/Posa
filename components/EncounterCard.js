@@ -16,6 +16,7 @@ import {
 import styles, { colors } from "../styles";
 import { useCats } from "../CatContext";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 
 export default function EncounterCard({ encounter, catId, onLongPress, encounterId, totalEncounters, displayIndex }) {
   const { deleteEncounter, updateEncounter } = useCats();
@@ -25,37 +26,53 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
   const [editLocation, setEditLocation] = useState(encounter.location || "");
   const [editDetails, setEditDetails] = useState(encounter.details || "");
 
+  // --- DELETE FUNCTION ---
   const handleDelete = () => {
     Alert.alert("Delete Encounter", "Are you sure you want to delete this encounter?", [
       { text: "Cancel", style: "cancel" },
+      // The catId and encounterId are correctly sourced from props here
       { text: "Delete", onPress: () => deleteEncounter(catId, encounterId), style: "destructive" },
     ]);
   };
 
+  // --- EDIT MODAL SETUP ---
   const handleEdit = () => {
+    // Re-initialize state when opening modal to ensure fresh data
     setEditPhoto(encounter.photo);
     setEditLocation(encounter.location || "");
     setEditDetails(encounter.details || "");
     setEditModalVisible(true);
   };
 
+  // --- SAVE EDIT FUNCTION ---
   const handleSaveEdit = () => {
     if (!editPhoto) {
       Alert.alert("Missing Photo", "Please select a photo for the encounter.");
       return;
     }
+    
+    // Call updateEncounter using the catId and encounterId from props
+    // and passing the new data from component state.
     updateEncounter(catId, encounterId, {
-      ...encounter,
-      photo: editPhoto,
-      location: editLocation,
-      details: editDetails,
+      // Keep existing properties like date, but update mutable fields
+      ...encounter, 
+      photo: editPhoto, // Use state variable here
+      location: editLocation, // Use state variable here
+      details: editDetails, // Use state variable here
     });
+
     setEditModalVisible(false);
   };
 
+  // --- IMAGE PICKER FOR EDITING ---
   const handleEditImagePicker = async () => {
     try {
-      const ImagePicker = await import("expo-image-picker");
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission required', 'Gallery access is needed to pick a photo.');
+        return;
+      }
+      
       const res = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 1,
@@ -64,6 +81,7 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
         setEditPhoto(res.assets[0].uri);
       }
     } catch (e) {
+      console.error(e);
       Alert.alert("Error", "Failed to open image picker.");
     }
   };
@@ -80,6 +98,7 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
         <View style={{ flexDirection: "column", flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TouchableOpacity onPress={onLongPress}>
+              {/* Image source remains the same */}
               <Image source={{ uri: encounter.photo }} style={styles.encounterImage} />
             </TouchableOpacity>
             <View
@@ -96,16 +115,19 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
                   marginBottom: 2,
                 }}
               >
+                {/* Display encounter number */}
                 {`Encounter #${encounterNumber ?? 0}`}
               </Text>
               <Text
                 style={[styles.encounterDate, { textAlign: "center", width: "100%" }]}
               >
+                {/* Display date */}
                 {encounter.date}
               </Text>
               <Text
                 style={[styles.encounterLocation, { textAlign: "center", width: "100%" }]}
               >
+                {/* Display location */}
                 {encounter.location || "Unknown location"}
               </Text>
             </View>
@@ -117,7 +139,7 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
           )}
         </View>
 
-        {/* Buttons shown when expanded */}
+        {/* Buttons shown when expanded (This is the section you were asking about) */}
         {isExpanded && (
           <View style={styles.encounterActionButtons}>
             <TouchableOpacity onPress={handleDelete} style={{ padding: 5 }}>
@@ -177,7 +199,7 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
               {/* Buttons */}
               <View style={styles.modalButtons}>
                 <TouchableOpacity
-                  style={[styles.button, { backgroundColor: "#aaa", flex: 1, marginRight: 10 }]}
+                  style={[styles.button, { backgroundColor: colors.cancel, flex: 1, marginRight: 10 }]}
                   onPress={() => setEditModalVisible(false)}
                 >
                   <Text style={styles.buttonText}>Cancel</Text>

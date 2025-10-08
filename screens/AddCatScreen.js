@@ -52,16 +52,13 @@ export default function AddCatScreen({ navigation, route }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0} // Adjust this offset if the view is too low or high
+      <ScrollView 
+      contentContainerStyle={[styles.scrollContainer,{ flexGrow: 1 }]}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
 
-    >
-      <ScrollView contentContainerStyle={[styles.scrollContainer]}>
-        <View>
-          <Text style={styles.title}>New Cat Acquired!</Text>
-
+      >
+        <View style={styles.container}>
           {/* Display chosen image */}
           {imageUri ? (
             <Image
@@ -70,7 +67,7 @@ export default function AddCatScreen({ navigation, route }) {
                 width: 200,
                 height: 200,
                 borderRadius: 12,
-                marginVertical: 20,
+                marginBottom: 20,
                 alignSelf: "center",
               }}
             />
@@ -132,6 +129,5 @@ export default function AddCatScreen({ navigation, route }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
   );
 }

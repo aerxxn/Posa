@@ -72,11 +72,11 @@ export const CatProvider = ({ children }) => {
 
 
   // Update an existing encounter for a cat
-  const updateEncounter = (catId, encounterIndex, updatedEncounter) => {
+  const updateEncounter = (catId, encounterId, updatedEncounter) => {
     const updatedCats = cats.map(cat => {
       if (cat.id === catId) {
-        const updatedEncounters = cat.encounters.map((item, idx) =>
-          idx === encounterIndex ? updatedEncounter : item
+        const updatedEncounters = cat.encounters.map(item =>
+          item.id === encounterId ? updatedEncounter : item
         );
         return { ...cat, encounters: updatedEncounters };
       }
@@ -86,11 +86,11 @@ export const CatProvider = ({ children }) => {
   };
 
   // Add this new function to handle encounter deletion
-  const deleteEncounter = (catId, encounterIndex) => {
+  const deleteEncounter = (catId, encounterId) => {
     const updatedCats = cats.map(cat => {
       if (cat.id === catId) {
         const updatedEncounters = cat.encounters.filter(
-          (item, index) => index !== encounterIndex
+          item => item.id !== encounterId
         );
         return { ...cat, encounters: updatedEncounters };
       }

@@ -191,7 +191,7 @@ export default function CatDetailScreen({ route, navigation }) {
     <View style={styles.container}>
       <FlatList
         data={[...(cat.encounters || [])].slice().reverse()}
-        keyExtractor={(item, index) => item.id?.toString() || index.toString()}        renderItem={({ item, index }) => (
+        keyExtractor={(item, index) => item.id?.toString() || index.toString()}renderItem={({ item, index }) => (
           <EncounterCard
             encounter={item}
             catId={cat.id}

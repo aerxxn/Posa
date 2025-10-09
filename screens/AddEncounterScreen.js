@@ -1,20 +1,16 @@
 // screens/AddEncounterScreen.js
+import CatInput from "../components/CatInput";
+import PhotoPicker from "../components/PhotoPicker";
 import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
-  Image,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Dimensions,
+  ScrollView
 } from "react-native";
 import { useCats } from "../CatContext";
 import styles, { colors } from "../styles";
-import * as ImagePicker from "expo-image-picker";
 
 export default function AddEncounterScreen({ navigation, route }) {
   // Accept pre-selected imageUri (if any) and catId from navigation params
@@ -26,8 +22,6 @@ export default function AddEncounterScreen({ navigation, route }) {
   const [location, setLocation] = useState("");
   const [details, setDetails] = useState("");
 
-  // Get screen width for square image
-  const screenWidth = Dimensions.get("window").width;
 
   // Ask for permissions on mount (but DO NOT auto-open pickers here)
   useEffect(() => {
@@ -40,38 +34,6 @@ export default function AddEncounterScreen({ navigation, route }) {
       }
     })();
   }, []);
-
-  // Opens the image library for user to pick/change a photo (manual)
-  const handleImagePicker = async () => {
-    try {
-      const res = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 1,
-      });
-      if (!res.canceled && res.assets?.[0]) {
-        setImageUri(res.assets[0].uri);
-      }
-    } catch (e) {
-      console.error("launchImageLibraryAsync error:", e);
-      Alert.alert("Error", "Failed to open image picker.");
-    }
-  };
-
-  // Opens the camera for user to take/change a photo (manual)
-  const handleCameraPicker = async () => {
-    try {
-      const res = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 1,
-      });
-      if (!res.canceled && res.assets?.[0]) {
-        setImageUri(res.assets[0].uri);
-      }
-    } catch (e) {
-      console.error("launchCameraAsync error:", e);
-      Alert.alert("Error", "Failed to open camera.");
-    }
-  };
 
   // Save the new encounter
   const handleSaveEncounter = () => {
@@ -98,36 +60,15 @@ export default function AddEncounterScreen({ navigation, route }) {
       keyboardShouldPersistTaps="handled"
       style={{ backgroundColor: colors.background }}>
         <View style={styles.container}>
-      
           {/* Image preview area — displays preselected image above inputs */}
-          <TouchableOpacity
-            onPress={handleImagePicker}
-            onLongPress={handleCameraPicker}
-            style={{ alignItems: "center", marginVertical: 12 }}
-          >
-            {imageUri ? (
-              // Show the chosen image as a square
-              <Image
-                source={{ uri: imageUri }}
-                style={{
-                  width: screenWidth - 40, // some padding from sides
-                  height: screenWidth - 40, // square
-                  borderRadius: 12,
-                  resizeMode: "cover",
-                }}
-              />
-            ) : (
-              // Placeholder container
-              <View style={[styles.imageInputContainer, { justifyContent: "center" }]}>
-                <Text style={styles.imagePlaceholderText}>
-                  Tap to add photo (long press for camera)
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          <PhotoPicker
+            label="Encounter Photo"
+            imageUri={imageUri}
+            onChange={setImageUri}
+          />
 
           {/* Location input */}
-          <TextInput
+          <CatInput
             style={styles.input}
             placeholder="Location of Encounter"
             placeholderTextColor="#7A5C3E"
@@ -136,7 +77,7 @@ export default function AddEncounterScreen({ navigation, route }) {
           />
 
           {/* Details input */}
-          <TextInput
+          <CatInput
             style={[styles.input, styles.inputMultiline]}
             placeholder="Details of Encounter"
             placeholderTextColor="#7A5C3E"

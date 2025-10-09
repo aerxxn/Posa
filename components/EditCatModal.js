@@ -1,8 +1,8 @@
-import React from "react";
+import CatInput from "../components/CatInput";
+
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   Image,
@@ -39,26 +39,30 @@ export default function EditCatModal({
             </TouchableOpacity>
 
             {/* Inputs */}
-            <TextInput
+            <CatInput
               style={styles.input}
+              label="Name"
               placeholder="Name"
               value={name}
               onChangeText={(t) => setEditableCat((p) => ({ ...p, name: t }))}
             />
-            <TextInput
+            <CatInput
               style={styles.input}
+              label="Eye Color"
               placeholder="Eye Color"
               value={eye}
               onChangeText={(t) => setEditableCat((p) => ({ ...p, eye: t }))}
             />
-            <TextInput
+            <CatInput
               style={styles.input}
+              label="Fur"
               placeholder="Fur Color"
               value={color}
               onChangeText={(t) => setEditableCat((p) => ({ ...p, color: t }))}
             />
-            <TextInput
+            <CatInput
               style={[styles.input, styles.inputMultiline]}
+              label="Behavior / Personality"
               placeholder="Behavior"
               value={behavior}
               onChangeText={(t) => setEditableCat((p) => ({ ...p, behavior: t }))}

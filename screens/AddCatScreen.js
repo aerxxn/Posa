@@ -2,6 +2,7 @@
 // Allows user to add a new cat profile with its first encounter.
 
 //IMPORTS
+import CatInput from "../components/CatInput";
 import React, { useState } from "react";
 import {
   View,
@@ -81,35 +82,31 @@ export default function AddCatScreen({ navigation, route }) {
           )}
 
           {/*INPUTS*/}
-          <TextInput
-            style={styles.input}
-            placeholder="Name"
-            placeholderTextColor="#7A5C3E"
+          <CatInput
+            label="Name"
+            placeholder="Enter cat's name"
             value={name}
             onChangeText={setName}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Eye Color (optional)"
-            placeholderTextColor="#7A5C3E"
+          <CatInput
+            label="Eye Color"
+            placeholder="Optional"
             value={eye}
             onChangeText={setEye}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Fur Color (optional)"
-            placeholderTextColor="#7A5C3E"
+          <CatInput
+            label="Fur Color"
+            placeholder="Optional"
             value={color}
             onChangeText={setColor}
           />
-          <TextInput
-            style={[styles.input]}
-            placeholder="Behavior/Personality (optional)"
-            placeholderTextColor="#7A5C3E"
+          <CatInput
+            label="Behavior / Personality"
+            placeholder="Optional"
             value={behavior}
             onChangeText={setBehavior}
-            multiline
           />
+
 
           {/*FIRST ENCOUNTER SECTION*/}
           <Text style={styles.subtitle}>First Encounter</Text>

@@ -1,25 +1,33 @@
-// screens/CatDetailScreen.js
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  Image,
-  FlatList,
-  Modal,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from "react-native";
-import { useCats } from "../CatContext";
-import styles, { colors } from "../styles";
-import EncounterCard from "../components/EncounterCard";
+//Cat Detail Screen
+// Displays cat information, encounters, and edit/add encounter modals.
+
+//IMPORTS
+import EditCatModal from "../components/EditCatModal";
+import FabButton from "../components/FabButton";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useCats } from "../CatContext";
+import EncounterCard from "../components/EncounterCard";
+import styles, { colors } from "../styles";
 
+//COMPONENT
 export default function CatDetailScreen({ route, navigation }) {
+  
+  //CONTEXT & STATE
   const { catId } = route.params;
   const { cats, updateCat, deleteCat } = useCats();
   const cat = cats.find((c) => c.id === catId);
@@ -29,12 +37,15 @@ export default function CatDetailScreen({ route, navigation }) {
   const [currentImageUri, setCurrentImageUri] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  //Editable Cat Info
   const [editableName, setEditableName] = useState("");
   const [editableEye, setEditableEye] = useState("");
   const [editableColor, setEditableColor] = useState("");
   const [editableBehavior, setEditableBehavior] = useState("");
   const [editableImageUri, setEditableImageUri] = useState(null);
-
+  
+  //EFFECTS
+  // When cat changes (e.g. after edit), update editable fields
   useEffect(() => {
     if (cat) {
       setEditableName(cat.name);
@@ -44,7 +55,8 @@ export default function CatDetailScreen({ route, navigation }) {
       setEditableImageUri(cat.imageUri);
     }
   }, [cat]);
-
+  
+  // If cat not found (e.g. deleted), show alert and go back
   if (!cat) {
     return (
       <View style={styles.container}>
@@ -53,6 +65,7 @@ export default function CatDetailScreen({ route, navigation }) {
     );
   }
 
+  //HANDLER: CAT EDIT/DELETE
   const handleEdit = () => {
     setEditModalVisible(true);
   };
@@ -86,7 +99,7 @@ export default function CatDetailScreen({ route, navigation }) {
     );
   };
 
-  // Small helper used by Edit modal to pick photo
+  //HANDLER: IMAGE PICKER (EDIT MODAL)
   const handleImagePicker = async (setImage) => {
     try {
       const res = await ImagePicker.launchImageLibraryAsync({
@@ -101,7 +114,7 @@ export default function CatDetailScreen({ route, navigation }) {
     }
   };
 
-  // Pick image (camera or gallery) here in CatDetailScreen then navigate with uri
+  //HANDLER: PICK IMAGE & NAVIGATE TO ADD ENCOUNTER
   const pickAndNavigateToAddEncounter = async (source) => {
     try {
       let res;
@@ -142,6 +155,7 @@ export default function CatDetailScreen({ route, navigation }) {
     }
   };
 
+  //UI HELPERS
   const renderHeader = () => (
     <View style={{ padding: 10 }}>
       <Image
@@ -155,11 +169,13 @@ export default function CatDetailScreen({ route, navigation }) {
           resizeMode: "cover",
         }}
       />
+
+      {/*CAT INFO*/}
       <View>
         <View style={styles.catHeader}>
           <Text style={styles.detailTitle}>{cat.name}</Text>
 
-          {/* Right-most stacked actions: trash on top, edit below */}
+          {/*ACTION ICONS*/}
           <View style={[styles.catHeaderActions, { flexDirection: "column", right: 10 }]}>
             <TouchableOpacity onPress={handleDelete} style={{ marginBottom: 8 }}>
               <Ionicons name="trash-outline" size={24} color={colors.danger} />
@@ -187,11 +203,12 @@ export default function CatDetailScreen({ route, navigation }) {
     </View>
   );
 
+  //RENDER
   return (
     <View style={styles.container}>
       <FlatList
         data={[...(cat.encounters || [])].slice().reverse()}
-        keyExtractor={(item, index) => item.id?.toString() || index.toString()}renderItem={({ item, index }) => (
+        keyExtractor={(item, index) => item.id?.toString() || index.toString()} renderItem={({ item, index }) => (
           <EncounterCard
             encounter={item}
             catId={cat.id}
@@ -212,7 +229,7 @@ export default function CatDetailScreen({ route, navigation }) {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Fullscreen Image Modal */}
+      {/*FULLSCREEN IMAGE MODAL*/}
       <Modal
         visible={modalVisible}
         transparent={true}
@@ -223,100 +240,60 @@ export default function CatDetailScreen({ route, navigation }) {
         </TouchableOpacity>
       </Modal>
 
-      {/* Edit Cat Modal */}
-      <Modal
+      {/*EDIT CAT MODAL*/}
+      <EditCatModal
         visible={editModalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setEditModalVisible(false)}
-      >
-        <KeyboardAvoidingView
-          style={styles.modalBackground}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-        >
-          <View style={styles.modalContainer}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.title}>Edit Cat</Text>
+        onClose={() => setEditModalVisible(false)}
+        onSave={handleSaveEdit}
+        editableCat={{
+          name: editableName,
+          eye: editableEye,
+          color: editableColor,
+          behavior: editableBehavior,
+          imageUri: editableImageUri,
+        }}
+        setEditableCat={(updater) => {
+          const next =
+            typeof updater === "function"
+              ? updater({
+                  name: editableName,
+                  eye: editableEye,
+                  color: editableColor,
+                  behavior: editableBehavior,
+                  imageUri: editableImageUri,
+                })
+              : updater;
 
-              <TouchableOpacity onPress={() => handleImagePicker(setEditableImageUri)}>
-                <Image source={{ uri: editableImageUri }} style={styles.modalImage} />
-                <Text style={styles.modalChangePhotoText}>Change Photo</Text>
-              </TouchableOpacity>
+          setEditableName(next.name);
+          setEditableEye(next.eye);
+          setEditableColor(next.color);
+          setEditableBehavior(next.behavior);
+          setEditableImageUri(next.imageUri);
+        }}
+        handleImagePicker={() => handleImagePicker(setEditableImageUri)}
+      />
 
-              <TextInput
-                style={styles.input}
-                placeholder="Name"
-                placeholderTextColor="#7A5C3E"
-                value={editableName}
-                onChangeText={setEditableName}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Eye Color"
-                placeholderTextColor="#7A5C3E"
-                value={editableEye}
-                onChangeText={setEditableEye}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Fur Color"
-                placeholderTextColor="#7A5C3E"
-                value={editableColor}
-                onChangeText={setEditableColor}
-              />
-              <TextInput
-                style={[styles.input, styles.inputMultiline]}
-                placeholder="Behavior"
-                placeholderTextColor="#7A5C3E"
-                value={editableBehavior}
-                onChangeText={setEditableBehavior}
-                multiline
-              />
-
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.button, { backgroundColor: "#aaa", flex: 1, marginRight: 10 }]}
-                  onPress={() => setEditModalVisible(false)}
-                >
-                  <Text style={styles.buttonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.button, { flex: 1 }]} onPress={handleSaveEdit}>
-                  <Text style={styles.buttonText}>Save</Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
-
-      {/* Floating Buttons */}
+      {/*FLOATING BUTTONS*/}
       {menuOpen && (
         <>
-          {/* Camera button above main FAB */}
-          <TouchableOpacity
-            style={[styles.fab, { bottom: 130 }]}
+          <FabButton
+            icon="📷"
+            position={{ bottom: 100, right: 20 }}
             onPress={() => pickAndNavigateToAddEncounter("camera")}
-          >
-            <Text style={styles.fabText}>📷</Text>
-          </TouchableOpacity>
-
-          {/* Gallery button slightly lower & left of main FAB */}
-          <TouchableOpacity
-            style={[styles.fab, { bottom: 60, right: 100 }]}
+          />
+          <FabButton
+            icon="🖼️"
+            position={{ bottom: 20, right: 100 }}
             onPress={() => pickAndNavigateToAddEncounter("gallery")}
-          >
-            <Text style={styles.fabText}>🖼️</Text>
-          </TouchableOpacity>
+          />
         </>
       )}
 
       {/* Main FAB */}
-      <TouchableOpacity
-        style={[styles.fab, { zIndex: 20, elevation: 20 }]}
+      <FabButton
+        icon={menuOpen ? "×" : "+"}
         onPress={() => setMenuOpen((p) => !p)}
-      >
-        <Text style={styles.fabText}>{menuOpen ? "×" : "+"}</Text>
-      </TouchableOpacity>
+      />
     </View>
   );
 }

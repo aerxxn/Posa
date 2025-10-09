@@ -1,4 +1,7 @@
-// screens/AddCatScreen.js
+//Add Cat Screen
+// Allows user to add a new cat profile with its first encounter.
+
+//IMPORTS
 import React, { useState } from "react";
 import {
   View,
@@ -7,14 +10,14 @@ import {
   TouchableOpacity,
   Image,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
 } from "react-native";
 import { useCats } from "../CatContext";
 import styles from "../styles";
 
+//COMPONENT
 export default function AddCatScreen({ navigation, route }) {
+  //STATE & CONTEXT
   const { imageUri: initialImageUri } = route.params || {};
   const [imageUri] = useState(initialImageUri || null);
   const [name, setName] = useState("");
@@ -25,6 +28,7 @@ export default function AddCatScreen({ navigation, route }) {
   const [details, setDetails] = useState("");
   const { addCat } = useCats();
 
+  //HANDLERS: SAVE CAT
   const handleSaveCat = () => {
     if (!name || !imageUri) {
       Alert.alert("Missing Info", "Please enter the cat's name and select a photo.");
@@ -51,15 +55,16 @@ export default function AddCatScreen({ navigation, route }) {
     addCat(newCat, () => navigation.goBack());
   };
 
+  //RENDER
   return (
       <ScrollView 
       contentContainerStyle={[styles.scrollContainer,{ flexGrow: 1 }]}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
-
       >
         <View style={styles.container}>
-          {/* Display chosen image */}
+
+          {/*CAT PHOTO PREVIEW*/}
           {imageUri ? (
             <Image
               source={{ uri: imageUri }}
@@ -75,7 +80,7 @@ export default function AddCatScreen({ navigation, route }) {
             <Text style={styles.subtitle}>No image selected</Text>
           )}
 
-          {/* Inputs */}
+          {/*INPUTS*/}
           <TextInput
             style={styles.input}
             placeholder="Name"
@@ -106,6 +111,7 @@ export default function AddCatScreen({ navigation, route }) {
             multiline
           />
 
+          {/*FIRST ENCOUNTER SECTION*/}
           <Text style={styles.subtitle}>First Encounter</Text>
           <TextInput
             style={styles.input}
@@ -124,9 +130,11 @@ export default function AddCatScreen({ navigation, route }) {
             textAlignVertical="top"
           />
 
+          {/*SAVE BUTTON*/}
           <TouchableOpacity style={styles.button} onPress={handleSaveCat}>
             <Text style={styles.buttonText}>Save Cat</Text>
           </TouchableOpacity>
+
         </View>
       </ScrollView>
   );

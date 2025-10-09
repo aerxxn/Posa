@@ -1,4 +1,6 @@
 // screens/HomeScreen.js
+import FabButton from "../components/FabButton";
+import HelpModal from "../components/HelpModal";
 import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Modal, ScrollView, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -76,40 +78,10 @@ export default function HomeScreen({ navigation, route }) {
   return (
     <View style={styles.container}>
       {/* Help Modal */}
-      <Modal
+      <HelpModal
         visible={helpModalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setHelpModalVisible(false)}
-      >
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", alignItems: "center" }}>
-          <View style={{ backgroundColor: "#fff", borderRadius: 16, padding: 24, width: "85%", maxHeight: "80%" }}>
-            <TouchableOpacity
-              style={{ position: "absolute", top: 12, right: 12 }}
-              onPress={() => setHelpModalVisible(false)}
-            >
-              <Ionicons name="close" size={28} color="#333" />
-            </TouchableOpacity>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 8, textAlign: "center" }}>How to Use Posa</Text>
-               {/* Home Screen Instructions */}
-              <Text style={{ fontSize: 14, marginBottom: 15, lineHeight: 22}}>
-                <Text style={{ fontWeight: "bold"}}>Home:</Text> View all your known cats here. Tap the <Text style={{fontWeight: "bold"}}>+</Text> button (bottom right) to open options to add a new cat. Choose 📷 to take a photo or 🖼️ to pick from your gallery.
-              </Text>
-
-              {/* Cat Detail Screen Instructions */}
-              <Text style={{ fontSize: 14, marginBottom: 15, lineHeight: 22}}>
-                <Text style={{ fontWeight: "bold"}}>Cat Detail:</Text> Tap on a cat's card to see its profile and a history of encounters. To <Text style={{fontWeight: "bold"}}>add a new encounter</Text>, tap the <Text style={{fontWeight: "bold"}}>+</Text> button (bottom right) and select a photo source. To <Text style={{fontWeight: "bold"}}>edit the cat's profile</Text> or <Text style={{fontWeight: "bold"}}>delete the cat</Text>, use the pencil (✏️) and trash (🗑️) icons next to the cat's name.
-              </Text>
-
-              {/* Encounters Instructions */}
-              <Text style={{ fontSize: 14, marginBottom: 10, lineHeight: 22}}>
-                <Text style={{ fontWeight: "bold"}}>Encounters:</Text> Tap on an encounter card to expand and view its full details. When expanded, you will see options to <Text style={{fontWeight: "bold"}}>edit</Text> (✏️) or <Text style={{fontWeight: "bold"}}>delete</Text> (🗑️) the specific encounter. You can tap the encounter photo to view it fullscreen.
-              </Text>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setHelpModalVisible(false)}
+      />
 
       {/* Cat List */}
       <FlatList
@@ -126,34 +98,28 @@ export default function HomeScreen({ navigation, route }) {
 
       />
 
-      {/* Floating Buttons */}
+      {/* Floating Action Button */}
       {menuOpen && (
         <>
-          {/* Camera button above main FAB */}
-          <TouchableOpacity
-            style={[styles.fab, { bottom: 130 }]}
+          <FabButton
+            icon="📷"
+            position={{ bottom: 100, right: 20 }}
             onPress={() => pickImage("camera")}
-          >
-            <Text style={styles.fabText}>📷</Text>
-          </TouchableOpacity>
+          />
 
-          {/* Gallery button slightly lower & left of main FAB */}
-          <TouchableOpacity
-            style={[styles.fab, { bottom: 60, right: 100 }]}
+          <FabButton
+            icon="🖼️"
+            position={{ bottom: 20, right: 100 }}
             onPress={() => pickImage("gallery")}
-          >
-            <Text style={styles.fabText}>🖼️</Text>
-          </TouchableOpacity>
+          />
         </>
       )}
 
       {/* Main FAB */}
-      <TouchableOpacity
-        style={[styles.fab, { zIndex: 20, elevation: 20 }]}
-        onPress={() => setMenuOpen((prev) => !prev)}
-      >
-        <Text style={styles.fabText}>{menuOpen ? "×" : "+"}</Text>
-      </TouchableOpacity>
+      <FabButton
+        icon={menuOpen ? "×" : "+"}
+        onPress={() => setMenuOpen((p) => !p)}
+      />
     </View>
   );
 }

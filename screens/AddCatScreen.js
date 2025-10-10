@@ -4,6 +4,7 @@
 //IMPORTS
 import CatInput from "../components/CatInput";
 import React, { useState } from "react";
+import * as ImageManipulator from "expo-image-manipulator";
 import {
   View,
   Text,
@@ -30,36 +31,49 @@ export default function AddCatScreen({ navigation, route }) {
   const { addCat } = useCats();
 
   //HANDLERS: SAVE CAT
-  const handleSaveCat = () => {
+  const handleSaveCat = async () => {
     if (!name || !imageUri) {
       Alert.alert("Missing Info", "Please enter the cat's name and select a photo.");
       return;
     }
 
-    const newCat = {
-      name,
-      eye,
-      color,
-      behavior,
-      imageUri,
-      encounters: [
-        {
-          id: Date.now(), // Unique ID for the encounter
-          date: new Date().toLocaleDateString(),
-          location: location || "Unknown",
-          details: details || "No details provided",
-          photo: imageUri,
-        },
-      ],
-    };
+    try {
+      // 🔧 Resize and compress image before saving
+      const manipulatedImage = await ImageManipulator.manipulateAsync(
+        imageUri,
+        [{ resize: { width: 800 } }], // resize to width 800px, preserving aspect ratio
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+      );
 
-    addCat(newCat, () => navigation.goBack());
+      const newCat = {
+        name,
+        eye,
+        color,
+        behavior,
+        imageUri: manipulatedImage.uri,
+        encounters: [
+          {
+            id: Date.now(),
+            date: new Date().toLocaleDateString(),
+            location: location || "Unknown",
+            details: details || "No details provided",
+            photo: manipulatedImage.uri,
+          },
+        ],
+      };
+
+      addCat(newCat, () => navigation.goBack());
+    } catch (error) {
+      console.error("Error processing image:", error);
+      Alert.alert("Error", "Something went wrong while processing the image.");
+    }
   };
+
 
   //RENDER
   return (
       <ScrollView 
-      contentContainerStyle={[styles.scrollContainer,{ flexGrow: 1 }]}
+      contentContainerStyle={styles.scrollContainer}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       >
@@ -128,7 +142,7 @@ export default function AddCatScreen({ navigation, route }) {
           />
 
           {/*SAVE BUTTON*/}
-          <TouchableOpacity style={styles.button} onPress={handleSaveCat}>
+          <TouchableOpacity style={[styles.button]} onPress={handleSaveCat}>
             <Text style={styles.buttonText}>Save Cat</Text>
           </TouchableOpacity>
 

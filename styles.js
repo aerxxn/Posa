@@ -22,24 +22,42 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: 15,
-    marginBottom:40
+    paddingHorizontal: 16,   // horizontal gutter
+    paddingTop: 12,          // small top breathing room
   },
   scrollContainer: {
-    backgroundColor: colors.background
+    flexGrow: 1,
+    backgroundColor: colors.background,
+    paddingHorizontal: 5,
+    paddingBottom: 40,
+  },
+  backgroundScreen: {
+    flex: 1,
+    backgroundColor: colors.background,
   },
 
   // ===== TYPOGRAPHY =====
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
     color: colors.text,
   },
   subtitle: {
     fontSize: 16,
+    fontWeight: "600",
     color: colors.subtleText,
     textAlign: "center",
-    marginVertical: 5,
+    marginBottom: 8,
+  },
+  bodyText: {
+    fontSize: 14,
+    color: colors.text,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#7A5C3E",
+    marginBottom: 4,
   },
   fabText: {
     fontSize: 28,
@@ -49,12 +67,12 @@ export default StyleSheet.create({
 
   // ===== CARDS =====
   listContent: {
-    paddingBottom: 140,
+    paddingBottom: 100,
     alignItems: "center",
   },
   card: {
     width: cardWidth,
-    height: 180,
+    height: 190,
     backgroundColor: colors.cardBackground,
     borderRadius: 12,
     padding: 10,
@@ -168,7 +186,9 @@ export default StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
   },
-
+  sectionPadding:{
+    padding:10
+  },
   catHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -188,7 +208,7 @@ export default StyleSheet.create({
     marginRight: 12,
   },
 
-  deleteButton: {},
+
 
   // ===== ENCOUNTERS =====
   encounterCard: {
@@ -234,9 +254,9 @@ export default StyleSheet.create({
     alignItems: "center",
   },
   modalContainer: {
-    width: "90%",
+    width: "85%",
     backgroundColor: colors.cardBackground,
-    borderRadius: 28,
+    borderRadius: 16,
     padding: 20,
   },
   modalTitle: {

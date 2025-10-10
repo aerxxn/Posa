@@ -11,12 +11,8 @@ import {
   Alert,
   FlatList,
   Image,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
-  ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -157,7 +153,7 @@ export default function CatDetailScreen({ route, navigation }) {
 
   //UI HELPERS
   const renderHeader = () => (
-    <View style={{ padding: 10 }}>
+    <View style={styles.sectionPadding}>
       <Image
         source={{ uri: cat.imageUri }}
         style={{
@@ -171,7 +167,6 @@ export default function CatDetailScreen({ route, navigation }) {
       />
 
       {/*CAT INFO*/}
-      <View>
         <View style={styles.catHeader}>
           <Text style={styles.detailTitle}>{cat.name}</Text>
 
@@ -189,23 +184,24 @@ export default function CatDetailScreen({ route, navigation }) {
         <Text style={styles.detailText}>
           <Text style={{ fontWeight: "bold" }}>Eye Color:</Text> {cat.eye || "N/A"}
         </Text>
+
         <Text style={styles.detailText}>
           <Text style={{ fontWeight: "bold" }}>Fur Color:</Text> {cat.color || "N/A"}
         </Text>
+
         <Text style={styles.detailText}>
           <Text style={{ fontWeight: "bold" }}>Behavior:</Text> {cat.behavior || "N/A"}
         </Text>
-      </View>
 
-      <View>
-        <Text style={styles.sectionTitle}>Encounters</Text>
-      </View>
+        <View>
+          <Text style={styles.sectionTitle}>Encounters</Text>
+        </View>
     </View>
   );
 
   //RENDER
   return (
-    <View style={styles.container}>
+    <View style={styles.backgroundScreen}>
       <FlatList
         data={[...(cat.encounters || [])].slice().reverse()}
         keyExtractor={(item, index) => item.id?.toString() || index.toString()} renderItem={({ item, index }) => (
@@ -225,7 +221,7 @@ export default function CatDetailScreen({ route, navigation }) {
         ListEmptyComponent={
           <Text style={[styles.subtitle, { paddingHorizontal: 10 }]}>No encounters logged.</Text>
         }
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       />
 
@@ -278,12 +274,12 @@ export default function CatDetailScreen({ route, navigation }) {
         <>
           <FabButton
             icon="📷"
-            position={{ bottom: 100, right: 20 }}
+            position={{ bottom: 110, right: 20 }}
             onPress={() => pickAndNavigateToAddEncounter("camera")}
           />
           <FabButton
             icon="🖼️"
-            position={{ bottom: 20, right: 100 }}
+            position={{ bottom: 40, right: 90 }}
             onPress={() => pickAndNavigateToAddEncounter("gallery")}
           />
         </>

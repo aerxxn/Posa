@@ -5,7 +5,7 @@ import styles from "../styles";
 export default function FabButton({
   icon = "+",
   onPress,
-  position = { bottom: 20, right: 20 },
+  position = { bottom: 40, right: 20 },
   style,
 }) {
   return (

@@ -17,6 +17,17 @@ import { TouchableOpacity, View, Text, Image } from "react-native";
 
 // Create a stack navigator for screen transitions
 const Stack = createNativeStackNavigator();
+const defaultScreenOptions = {
+  headerTitleAlign: "center",
+  headerBackTitleVisible: false,
+  headerTintColor: "#fff",
+  headerStyle: { backgroundColor: colors.primary },
+  headerTitleStyle: {
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+}
+
 
 // Main App component wraps everything in CatProvider and NavigationContainer
 export default function App() {
@@ -26,14 +37,15 @@ export default function App() {
       {/* NavigationContainer manages navigation state */}
       <NavigationContainer>
         {/* Stack.Navigator defines the navigation stack */}
-        <Stack.Navigator>
+        <Stack.Navigator screenOptions={defaultScreenOptions}>
           {/* Home screen with custom header and help button */}
           <Stack.Screen
             name="Posa"
             component={HomeScreen}
             options={({ navigation }) => ({
+              headerTitleAlign: "left",
               headerTitle: () => (
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View style={{ flexDirection: "row", alignItems: "center", paddingLeft:4 }}>
                   <Image
                     source={require("./assets/hslogo.png")}
                     style={{ width: 32, height: 32, marginRight: 8, borderRadius: 8 }}
@@ -41,13 +53,7 @@ export default function App() {
                   <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 20 }}>Posa</Text>
                 </View>
               ),
-              headerStyle: {
-                backgroundColor: colors.primary,
-              },
-              headerTintColor: "#fff",
-              headerTitleStyle: {
-                fontWeight: "bold",
-              },
+
               // Help button opens help modal
               headerRight: () => (
                 <TouchableOpacity onPress={() => navigation.setParams({ showHelp: true })} style={{ marginRight: 10 }}>
@@ -61,14 +67,7 @@ export default function App() {
             name="AddCat"
             component={AddCatScreen}
             options={{
-              title: "New Cat Acquired!",
-              headerStyle: {
-                backgroundColor: colors.primary,
-              },
-              headerTintColor: "#fff",
-              headerTitleStyle: {
-                fontWeight: "bold",
-              },
+              title: "New Cat Acquired!"
             }}
           />
           {/* Cat Detail screen for viewing/editing a cat */}
@@ -77,13 +76,6 @@ export default function App() {
             component={CatDetailScreen}
             options={{
               title: "Cat Details",
-              headerStyle: {
-                backgroundColor: colors.primary,
-              },
-              headerTintColor: "#fff",
-              headerTitleStyle: {
-                fontWeight: "bold",
-              },
             }}
           />
           {/* Add Encounter screen for logging a new encounter */}
@@ -92,14 +84,6 @@ export default function App() {
             component={AddEncounterScreen}
             options={({ route }) => ({
               title: `You meet ${route.params.catName} again!`,
-              headerStyle: {
-                backgroundColor: colors.primary,
-              },
-              headerTintColor: "#fff",
-              headerTitleStyle: {
-                fontWeight: "bold",
-                fontSize: 18,
-              },
             })}
           />
         </Stack.Navigator>

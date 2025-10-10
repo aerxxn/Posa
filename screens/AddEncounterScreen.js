@@ -1,7 +1,8 @@
 // screens/AddEncounterScreen.js
 import CatInput from "../components/CatInput";
 import PhotoPicker from "../components/PhotoPicker";
-import React, { useState, useEffect } from "react";
+import * as ImageManipulator from "expo-image-manipulator";
+import React, { useState} from "react";
 import {
   View,
   Text,
@@ -10,7 +11,7 @@ import {
   ScrollView
 } from "react-native";
 import { useCats } from "../CatContext";
-import styles, { colors } from "../styles";
+import styles from "../styles";
 
 export default function AddEncounterScreen({ navigation, route }) {
   // Accept pre-selected imageUri (if any) and catId from navigation params
@@ -22,43 +23,43 @@ export default function AddEncounterScreen({ navigation, route }) {
   const [location, setLocation] = useState("");
   const [details, setDetails] = useState("");
 
-
-  // Ask for permissions on mount (but DO NOT auto-open pickers here)
-  useEffect(() => {
-    (async () => {
-      try {
-        await ImagePicker.requestCameraPermissionsAsync();
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-      } catch (e) {
-        console.warn("Permission request failed:", e);
-      }
-    })();
-  }, []);
-
   // Save the new encounter
-  const handleSaveEncounter = () => {
+  const handleSaveEncounter = async () => {
     if (!imageUri) {
       Alert.alert("Missing Photo", "Please take or select a photo for the encounter.");
       return;
     }
 
-    const newEncounter = {
-      id: Date.now(), // Unique ID for the encounter
-      date: new Date().toLocaleDateString(),
-      location: location || "Unknown",
-      details: details || "No details provided",
-      photo: imageUri,
-    };
+    try {
+      // 🔧 Resize & compress before saving
+      const manipulatedImage = await ImageManipulator.manipulateAsync(
+        imageUri,
+        [{ resize: { width: 800 } }], // keeps aspect ratio automatically
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+      );
 
-    addEncounter(catId, newEncounter);
-    navigation.goBack();
+      const newEncounter = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString(),
+        location: location || "Unknown",
+        details: details || "No details provided",
+        photo: manipulatedImage.uri, // use optimized photo
+      };
+
+      addEncounter(catId, newEncounter);
+      navigation.goBack();
+    } catch (error) {
+      console.error("Error processing image:", error);
+      Alert.alert("Error", "Something went wrong while processing the image.");
+    }
   };
+
 
   return (
       <ScrollView 
-      contentContainerStyle={[styles.scrollContainer, {flexGrow: 1}]}
+      contentContainerStyle={styles.scrollContainer}
       keyboardShouldPersistTaps="handled"
-      style={{ backgroundColor: colors.background }}>
+      style={[styles.backgroundScreen]}>
         <View style={styles.container}>
           {/* Image preview area — displays preselected image above inputs */}
           <PhotoPicker

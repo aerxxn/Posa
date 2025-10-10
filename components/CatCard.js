@@ -1,7 +1,6 @@
 // components/CatCard.js
 // Card component for displaying a cat in the list/grid
-import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { Text, Image, TouchableOpacity } from "react-native";
 import styles from "../styles";
 
 // Props:

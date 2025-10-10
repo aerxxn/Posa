@@ -2,8 +2,7 @@
 import FabButton from "../components/FabButton";
 import HelpModal from "../components/HelpModal";
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Modal, ScrollView, Alert } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, FlatList, ActivityIndicator, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useCats } from "../CatContext";
 import CatCard from "../components/CatCard";
@@ -76,7 +75,7 @@ export default function HomeScreen({ navigation, route }) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.modalBackground}>
       {/* Help Modal */}
       <HelpModal
         visible={helpModalVisible}
@@ -92,10 +91,9 @@ export default function HomeScreen({ navigation, route }) {
         )}
         numColumns={2}
         columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={styles.scrollContainer}
         ListEmptyComponent={<Text style={styles.subtitle}>No cats found yet. Add one!</Text>}
         showsVerticalScrollIndicator={false}
-
       />
 
       {/* Floating Action Button */}
@@ -103,13 +101,13 @@ export default function HomeScreen({ navigation, route }) {
         <>
           <FabButton
             icon="📷"
-            position={{ bottom: 100, right: 20 }}
+            position={{ bottom: 110, right: 20 }}
             onPress={() => pickImage("camera")}
           />
 
           <FabButton
             icon="🖼️"
-            position={{ bottom: 20, right: 100 }}
+            position={{ bottom: 40, right: 90 }}
             onPress={() => pickImage("gallery")}
           />
         </>

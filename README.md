@@ -8,7 +8,7 @@ This app stores everything locally on your device (AsyncStorage). No backend, no
 
 - Add, edit, and delete cats with photos
 - Log encounters with date, notes, and image(s)
-- Long‑press an encounter photo to view it fullscreen
+- Press an encounter photo to view it fullscreen
 - Fully responsive layout via a tiny custom scaling utility (`scaling.js`)
 - Fast image handling with Expo Image Picker and Image Manipulator
 - Persistent storage on device using `@react-native-async-storage/async-storage`

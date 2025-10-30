@@ -14,6 +14,7 @@ import AddEncounterScreen from "./screens/AddEncounterScreen";
 import { colors } from "./styles";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity, View, Text, Image } from "react-native";
+import { scale, moderateScale } from './scaling';
 
 // Create a stack navigator for screen transitions
 const Stack = createNativeStackNavigator();
@@ -45,19 +46,19 @@ export default function App() {
             options={({ navigation }) => ({
               headerTitleAlign: "left",
               headerTitle: () => (
-                <View style={{ flexDirection: "row", alignItems: "center", paddingLeft:4 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", paddingLeft: scale(4) }}>
                   <Image
                     source={require("./assets/hslogo.png")}
-                    style={{ width: 32, height: 32, marginRight: 8, borderRadius: 8 }}
+                    style={{ width: scale(32), height: scale(32), marginRight: scale(8), borderRadius: moderateScale(8) }}
                   />
-                  <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 20 }}>Posa</Text>
+                  <Text style={{ color: "#fff", fontWeight: "bold", fontSize: moderateScale(20) }}>Posa</Text>
                 </View>
               ),
 
               // Help button opens help modal
               headerRight: () => (
-                <TouchableOpacity onPress={() => navigation.setParams({ showHelp: true })} style={{ marginRight: 10 }}>
-                  <Ionicons name="help-circle-outline" size={28} color="#fff" />
+                <TouchableOpacity onPress={() => navigation.setParams({ showHelp: true })} style={{ marginRight: scale(10) }}>
+                  <Ionicons name="help-circle-outline" size={moderateScale(28)} color="#fff" />
                 </TouchableOpacity>
               ),
             })}

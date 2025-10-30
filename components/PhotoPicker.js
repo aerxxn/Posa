@@ -1,6 +1,7 @@
 // components/PhotoPicker.js
 import { TouchableOpacity, Image, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { scale, moderateScale, verticalScale } from '../scaling';
 import styles from "../styles";
 
 /**
@@ -23,14 +24,14 @@ export default function PhotoPicker({ imageUri, onChange, label }) {
   };
 
   return (
-    <View style={{ alignItems: "center", marginBottom: 20 }}>
+    <View style={{ alignItems: "center", marginBottom: verticalScale(20) }}>
       {label && (
         <Text
           style={{
             fontWeight: "bold",
             color: "#7A5C3E",
-            marginBottom: 8,
-            fontSize: 14,
+            marginBottom: verticalScale(8),
+            fontSize: moderateScale(14),
           }}
         >
           {label}
@@ -40,10 +41,10 @@ export default function PhotoPicker({ imageUri, onChange, label }) {
         <Image
           source={{ uri: imageUri }}
           style={{
-            width: 200,
-            height: 200,
-            borderRadius: 12,
-            marginBottom: 6,
+            width: scale(200),
+            height: scale(200),
+            borderRadius: moderateScale(12),
+            marginBottom: verticalScale(6),
             backgroundColor: "#f0e6d8",
           }}
         />

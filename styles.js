@@ -1,7 +1,9 @@
 // styles.js
 import { StyleSheet, Dimensions } from "react-native";
-const { width } = Dimensions.get("window");
-const cardWidth = (width - 48) / 2; // (Screen width - padding) / 2
+import { scale, verticalScale, moderateScale } from './scaling';
+
+const { width, height } = Dimensions.get("window");
+const cardWidth = (width - scale(48)) / 2; // (Screen width - padding) / 2
 
 export const colors = {
   primary: "#8B6F4E",
@@ -22,14 +24,14 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: 16,   // horizontal gutter
-    paddingTop: 12,          // small top breathing room
+    alignItems: "center",
+    paddingTop: verticalScale(5),          // small top breathing room
   },
   scrollContainer: {
     flexGrow: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: 5,
-    paddingBottom: 40,
+    paddingHorizontal: scale(5),
+    paddingBottom: verticalScale(40),
   },
   backgroundScreen: {
     flex: 1,
@@ -38,47 +40,49 @@ export default StyleSheet.create({
 
   // ===== TYPOGRAPHY =====
   title: {
-    fontSize: 22,
+    alignSelf: "center",
+    fontSize: moderateScale(22),
     fontWeight: "bold",
     color: colors.text,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: moderateScale(16),
     fontWeight: "600",
     color: colors.subtleText,
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: verticalScale(8),
   },
   bodyText: {
-    fontSize: 14,
+    fontSize: moderateScale(14),
     color: colors.text,
   },
   label: {
-    fontSize: 14,
+    fontSize: moderateScale(14),
     fontWeight: "bold",
     color: "#7A5C3E",
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
   },
   fabText: {
-    fontSize: 28,
+    fontSize: moderateScale(28),
     color: colors.cardBackground,
     fontWeight: "300",
   },
 
   // ===== CARDS =====
   listContent: {
-    paddingBottom: 100,
+    paddingBottom: verticalScale(100),
     alignItems: "center",
   },
   card: {
     width: cardWidth,
-    height: 190,
+    height: verticalScale(175),
     backgroundColor: colors.cardBackground,
-    borderRadius: 12,
-    padding: 10,
+    borderRadius: moderateScale(12),
+    padding: scale(10),
     alignItems: "center",
     justifyContent: "center",
-    margin: 8,
+    marginHorizontal: scale(8),
+    marginVertical: scale(4),
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -86,14 +90,14 @@ export default StyleSheet.create({
     elevation: 3,
   },
   cardImage: {
-    width: cardWidth - 20,
-    height: cardWidth - 20,
-    borderRadius: 10,
-    marginBottom: 8,
+    width: cardWidth - scale(20),
+    height: cardWidth - scale(20),
+    borderRadius: moderateScale(10),
+    marginBottom: verticalScale(8),
     resizeMode: "cover",
   },
   cardName: {
-    fontSize: 18,
+    fontSize: moderateScale(18),
     fontWeight: "600",
     color: colors.text,
     textAlign: "center",
@@ -101,43 +105,46 @@ export default StyleSheet.create({
 
   // ===== FORMS & INPUTS =====
   input: {
+    width: "95%",
+    alignSelf: "center",
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    fontSize: 16,
+    borderRadius: moderateScale(8),
+    padding: scale(12),
+    marginBottom: verticalScale(12),
+    fontSize: moderateScale(16),
     backgroundColor: colors.cardBackground,
     color: colors.text,
   },
+
   inputMultiline: {
-    height: 90,
+    height: verticalScale(90),
     textAlignVertical: "top",
   },
 
   // ===== BUTTONS =====
   button: {
     backgroundColor: colors.primary,
-    paddingVertical: 14,
-    borderRadius: 8,
+    padding: scale(14),
+    borderRadius: moderateScale(8),
     alignItems: "center",
-    marginTop: 10,
+    marginTop: verticalScale(10),
   },
   buttonText: {
     color: colors.cardBackground,
-    fontSize: 16,
+    fontSize: moderateScale(16),
     fontWeight: "600",
   },
 
   // ===== FAB =====
   fab: {
     position: "absolute",
-    bottom: 60,
-    right: 30,
+    bottom: verticalScale(60),
+    right: scale(30),
     backgroundColor: colors.primary,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: scale(60),
+    height: scale(60),
+    borderRadius: scale(30),
     alignItems: "center",
     justifyContent: "center",
     shadowColor: colors.shadow,
@@ -150,9 +157,9 @@ export default StyleSheet.create({
   fabOption: {
   position: "absolute",
   backgroundColor: "#03dac6", // or same as your HomeScreen option buttons
-  width: 50,
-  height: 50,
-  borderRadius: 25,
+  width: scale(50),
+  height: scale(50),
+  borderRadius: scale(25),
   alignItems: "center",
   justifyContent: "center",
   elevation: 8, // shadow
@@ -162,61 +169,64 @@ export default StyleSheet.create({
   // ===== DETAIL SCREEN =====
   detailImage: {
     width: "100%",
-    height: 250,
-    borderRadius: 12,
-    marginBottom: 20,
+    height: verticalScale(250),
+    borderRadius: moderateScale(12),
+    marginBottom: verticalScale(20),
     resizeMode: "cover",
   },
   detailTitle: {
-    fontSize: 35,
+    fontSize: moderateScale(35),
     fontWeight: "bold",
     color: colors.text,
     
   },
   detailText: {
-    fontSize: 16,
+    fontSize: moderateScale(16),
     color: colors.subtleText,
-    marginBottom: 5,
+    marginBottom: verticalScale(5),
   },
   sectionTitle: {
     alignSelf: "center",
-    fontSize: 25,
+    fontSize: moderateScale(25),
     fontWeight: "bold",
     color: colors.text,
-    marginTop: 10,
-    marginBottom: 10,
+    marginTop: verticalScale(10),
+    marginBottom: verticalScale(10),
   },
   sectionPadding:{
-    padding:10
+    padding: scale(10)
   },
   catHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",   // centers content
     position: "relative",       // lets us absolutely position the buttons
-    marginBottom: 8,
+    marginBottom: verticalScale(8),
   },
 
   catHeaderActions: {
     position: "absolute",
     right: 0,                   // stick buttons to the right edge
-    flexDirection: "row",    // stack Edit over Trash
     alignItems: "center",
+    flexDirection: "column", 
+    right: scale(10)
   },
 
   editButton: {
-    marginRight: 12,
+    marginRight: scale(12),
   },
 
 
 
   // ===== ENCOUNTERS =====
   encounterCard: {
+    width: "90%",
+    alignSelf: "center",
     flexDirection: "row",
     backgroundColor: colors.cardBackground,
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 12,
+    borderRadius: moderateScale(12),
+    padding: scale(15),
+    marginBottom: verticalScale(12),
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -224,26 +234,26 @@ export default StyleSheet.create({
     elevation: 3,
   },
   encounterImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-    marginRight: 15,
+    width: scale(80),
+    height: scale(80),
+    borderRadius: moderateScale(10),
+    marginRight: scale(15),
     resizeMode: "cover",
   },
   encounterTitle: {
-    fontSize: 16,
+    fontSize: moderateScale(16),
     fontWeight: "bold",
     color: colors.accent,
   },
   encounterDate: {
-    fontSize: 14,
+    fontSize: moderateScale(14),
     color: colors.subtleText,
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
   },
   encounterLocation: {
-    fontSize: 14,
+    fontSize: moderateScale(14),
     color: colors.text,
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
   },
 
   // ===== MODALS =====
@@ -256,51 +266,51 @@ export default StyleSheet.create({
   modalContainer: {
     width: "85%",
     backgroundColor: colors.cardBackground,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: moderateScale(16),
+    padding: scale(20),
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: moderateScale(20),
     fontWeight: "bold",
-    marginBottom: 15,
+    marginBottom: verticalScale(15),
     alignSelf: "center",
     color: colors.text,
   },
   modalImage: {
-    width: 100,
-    height: 100,
+    width: scale(100),
+    height: scale(100),
     alignSelf: "center",
-    borderRadius: 12,
+    borderRadius: moderateScale(12),
   },
   modalChangePhotoText: {
-    marginTop: 8,
+    marginTop: verticalScale(8),
     textAlign: "center",
     color: colors.primary,
   },
   modalInput: {
-    height: 40,
+    height: verticalScale(40),
     borderColor: colors.primary,
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginVertical: 8,
+    borderRadius: moderateScale(8),
+    paddingHorizontal: scale(10),
+    marginVertical: verticalScale(8),
     color: colors.text,
   },
   modalInputMultiline: {
-    height: 80,
+    height: verticalScale(80),
     textAlignVertical: "top",
   },
   modalButtons: {
     flexDirection: "row",
-    marginTop: 20,
+    marginTop: verticalScale(20),
     justifyContent: "space-between",
   },
   modalButton: {
     flex: 1,
-    padding: 14,
-    borderRadius: 8,
+    padding: scale(14),
+    borderRadius: moderateScale(8),
     alignItems: "center",
-    marginHorizontal: 5,
+    marginHorizontal: scale(5),
   },
   modalCancel: {
     backgroundColor: colors.cancel,
@@ -310,13 +320,13 @@ export default StyleSheet.create({
   },
   modalButtonText: {
     color: colors.cardBackground,
-    fontSize: 16,
+    fontSize: moderateScale(16),
     fontWeight: "600",
   },
   fullscreenImage: {
     width: "90%",
     height: "90%",
     resizeMode: "contain", // ✅ keep aspect ratio
-    borderRadius: 24
+    borderRadius: moderateScale(24)
   }
 });

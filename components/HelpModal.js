@@ -7,6 +7,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { scale, moderateScale, verticalScale } from '../scaling';
 
 export default function HelpModal({ visible, onClose }) {
   return (
@@ -27,27 +28,27 @@ export default function HelpModal({ visible, onClose }) {
         <View
           style={{
             backgroundColor: "#fff",
-            borderRadius: 16,
-            padding: 24,
+            borderRadius: moderateScale(16),
+            padding: scale(24),
             width: "85%",
             maxHeight: "80%",
           }}
         >
           {/* Close Button */}
           <TouchableOpacity
-            style={{ position: "absolute", top: 12, right: 12 }}
+            style={{ position: "absolute", top: scale(12), right: scale(12) }}
             onPress={onClose}
           >
-            <Ionicons name="close" size={28} color="#333" />
+            <Ionicons name="close" size={moderateScale(28)} color="#333" />
           </TouchableOpacity>
 
           {/* Scrollable Content */}
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text
               style={{
-                fontSize: 20,
+                fontSize: moderateScale(20),
                 fontWeight: "bold",
-                marginBottom: 8,
+                marginBottom: verticalScale(8),
                 textAlign: "center",
               }}
             >
@@ -56,7 +57,7 @@ export default function HelpModal({ visible, onClose }) {
 
             {/* Home Screen Instructions */}
             <Text
-              style={{ fontSize: 14, marginBottom: 15, lineHeight: 22 }}
+              style={{ fontSize: moderateScale(14), marginBottom: verticalScale(15), lineHeight: moderateScale(22) }}
             >
               <Text style={{ fontWeight: "bold" }}>Home:</Text> View all your
               known cats here. Tap the{" "}
@@ -67,7 +68,7 @@ export default function HelpModal({ visible, onClose }) {
 
             {/* Cat Detail Screen Instructions */}
             <Text
-              style={{ fontSize: 14, marginBottom: 15, lineHeight: 22 }}
+              style={{ fontSize: moderateScale(14), marginBottom: verticalScale(15), lineHeight: moderateScale(22) }}
             >
               <Text style={{ fontWeight: "bold" }}>Cat Detail:</Text> Tap on a
               cat's card to see its profile and a history of encounters. To{" "}
@@ -81,7 +82,7 @@ export default function HelpModal({ visible, onClose }) {
 
             {/* Encounters Instructions */}
             <Text
-              style={{ fontSize: 14, marginBottom: 10, lineHeight: 22 }}
+              style={{ fontSize: moderateScale(14), marginBottom: verticalScale(10), lineHeight: moderateScale(22) }}
             >
               <Text style={{ fontWeight: "bold" }}>Encounters:</Text> Tap on an
               encounter card to expand and view its full details. When expanded,

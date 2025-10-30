@@ -19,6 +19,7 @@ import {
 import { useCats } from "../CatContext";
 import EncounterCard from "../components/EncounterCard";
 import styles, { colors } from "../styles";
+import { scale, moderateScale, verticalScale } from '../scaling';
 
 //COMPONENT
 export default function CatDetailScreen({ route, navigation }) {
@@ -99,7 +100,7 @@ export default function CatDetailScreen({ route, navigation }) {
   const handleImagePicker = async (setImage) => {
     try {
       const res = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: [ImagePicker.MediaType.IMAGE],
         quality: 1,
       });
       if (!res.canceled && res.assets?.[0]) {
@@ -121,7 +122,7 @@ export default function CatDetailScreen({ route, navigation }) {
           return;
         }
         res = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          mediaTypes: [ImagePicker.MediaType.IMAGE],
           quality: 1,
         });
       } else {
@@ -157,11 +158,11 @@ export default function CatDetailScreen({ route, navigation }) {
       <Image
         source={{ uri: cat.imageUri }}
         style={{
-          width: 250,
-          height: 250,
-          borderRadius: 30,
+          width: scale(250),
+          height: scale(250),
+          borderRadius: moderateScale(30),
           alignSelf: "center",
-          marginBottom: 10,
+          marginBottom: verticalScale(10),
           resizeMode: "cover",
         }}
       />
@@ -171,12 +172,12 @@ export default function CatDetailScreen({ route, navigation }) {
           <Text style={styles.detailTitle}>{cat.name}</Text>
 
           {/*ACTION ICONS*/}
-          <View style={[styles.catHeaderActions, { flexDirection: "column", right: 10 }]}>
-            <TouchableOpacity onPress={handleDelete} style={{ marginBottom: 8 }}>
-              <Ionicons name="trash-outline" size={24} color={colors.danger} />
+          <View style={styles.catHeaderActions}>
+            <TouchableOpacity onPress={handleDelete} style={{ marginBottom: verticalScale(8) }}>
+              <Ionicons name="trash-outline" size={moderateScale(24)} color={colors.danger} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleEdit}>
-              <Ionicons name="create-outline" size={24} color={colors.text} />
+              <Ionicons name="create-outline" size={moderateScale(24)} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
@@ -201,7 +202,7 @@ export default function CatDetailScreen({ route, navigation }) {
 
   //RENDER
   return (
-    <View style={styles.backgroundScreen}>
+    <View style={[styles.backgroundScreen]}>
       <FlatList
         data={[...(cat.encounters || [])].slice().reverse()}
         keyExtractor={(item, index) => item.id?.toString() || index.toString()} renderItem={({ item, index }) => (
@@ -221,7 +222,7 @@ export default function CatDetailScreen({ route, navigation }) {
         ListEmptyComponent={
           <Text style={[styles.subtitle, { paddingHorizontal: 10 }]}>No encounters logged.</Text>
         }
-        contentContainerStyle={styles.scrollContainer}
+        contentContainerStyle={[styles.scrollContainer,{ paddingBottom: 100 }]}
         showsVerticalScrollIndicator={false}
       />
 
@@ -232,7 +233,7 @@ export default function CatDetailScreen({ route, navigation }) {
         onRequestClose={() => setModalVisible(false)}
       >
         <TouchableOpacity style={styles.modalBackground} onPress={() => setModalVisible(false)}>
-          <Image source={{ uri: currentImageUri }} style={[styles.fullscreenImage, { borderRadius: 24 }]} />
+          <Image source={{ uri: currentImageUri }} style={[styles.fullscreenImage]} />
         </TouchableOpacity>
       </Modal>
 

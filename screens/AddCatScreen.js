@@ -8,7 +8,6 @@ import * as ImageManipulator from "expo-image-manipulator";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   Image,
   Alert,
@@ -124,14 +123,14 @@ export default function AddCatScreen({ navigation, route }) {
 
           {/*FIRST ENCOUNTER SECTION*/}
           <Text style={styles.subtitle}>First Encounter</Text>
-          <TextInput
+          <CatInput
             style={styles.input}
             placeholder="Location of Encounter"
             placeholderTextColor="#7A5C3E"
             value={location}
             onChangeText={setLocation}
           />
-          <TextInput
+          <CatInput
             style={[styles.input, styles.detailsInput, styles.inputMultiline]}
             placeholder="Details of Encounter"
             placeholderTextColor="#7A5C3E"

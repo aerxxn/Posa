@@ -22,7 +22,7 @@ export default function HomeScreen({ navigation, route }) {
   }, [route?.params?.showHelp]);
 
   // Open camera or gallery
-  const pickImage = async (source) => {
+    const pickImage = async (source) => {
     try {
       let result;
       if (source === "camera") {
@@ -32,7 +32,7 @@ export default function HomeScreen({ navigation, route }) {
           return;
         }
         result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          mediaTypes: 'images',
           quality: 0.8,
         });
       } else {
@@ -42,7 +42,7 @@ export default function HomeScreen({ navigation, route }) {
           return;
         }
         result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          mediaTypes: 'images',
           quality: 0.8,
         });
       }
@@ -56,6 +56,7 @@ export default function HomeScreen({ navigation, route }) {
       console.error("Image picker error:", err);
     }
   };
+
 
   if (loading) {
     return (
@@ -75,7 +76,7 @@ export default function HomeScreen({ navigation, route }) {
   }
 
   return (
-    <View style={styles.modalBackground}>
+    <View style={styles.container}>
       {/* Help Modal */}
       <HelpModal
         visible={helpModalVisible}
@@ -91,7 +92,7 @@ export default function HomeScreen({ navigation, route }) {
         )}
         numColumns={2}
         columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.scrollContainer}
+        contentContainerStyle={[styles.scrollContainer,{ paddingBottom: 100 }]}
         ListEmptyComponent={<Text style={styles.subtitle}>No cats found yet. Add one!</Text>}
         showsVerticalScrollIndicator={false}
       />

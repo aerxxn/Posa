@@ -15,6 +15,7 @@ import styles, { colors } from "../styles";
 import { useCats } from "../CatContext";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { moderateScale, verticalScale } from '../scaling';
 
 //COMPONENT
 export default function EncounterCard({ encounter, catId, onLongPress, encounterId, totalEncounters, displayIndex }) {
@@ -109,8 +110,8 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
                 style={{
                   fontWeight: "bold",
                   color: colors.primary,
-                  fontSize: 15,
-                  marginBottom: 2,
+                  fontSize: moderateScale(15),
+                  marginBottom: verticalScale(2),
                 }}
               >
                 {`Encounter #${encounterNumber ?? 0}`}
@@ -132,7 +133,7 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
 
           {/*DETAILS (EXPANDED)*/}
           {isExpanded && (
-            <Text style={[styles.encounterDetail, { marginTop: 12 }]}>
+            <Text style={[styles.encounterDetail, { marginTop: verticalScale(12) }]}>
               {encounter.details || "No details provided"}
             </Text>
           )}
@@ -141,11 +142,11 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
         {/*BUTTONS (EXPANDED)*/}
         {isExpanded && (
           <View style={styles.encounterActionButtons}>
-            <TouchableOpacity onPress={handleDelete} style={{ padding: 5 }}>
-              <Ionicons name="trash-outline" size={24} color={colors.danger} />
+            <TouchableOpacity onPress={handleDelete} style={{ padding: moderateScale(5) }}>
+              <Ionicons name="trash-outline" size={moderateScale(24)} color={colors.danger} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleEdit} style={{ padding: 5 }}>
-              <Ionicons name="create-outline" size={24} color={colors.text} />
+            <TouchableOpacity onPress={handleEdit} style={{ padding: moderateScale(5) }}>
+              <Ionicons name="create-outline" size={moderateScale(24)} color={colors.text} />
             </TouchableOpacity>
           </View>
         )}

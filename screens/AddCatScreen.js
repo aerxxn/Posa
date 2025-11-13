@@ -5,7 +5,7 @@
 import CatInput from "../components/CatInput";
 import React, { useState } from "react";
 import * as ImageManipulator from "expo-image-manipulator";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { saveImageToDest } from "../utils/fileUtils";
 import {
   View,

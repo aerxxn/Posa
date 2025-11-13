@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { fromByteArray } from 'base64-js';
 
 // Save an image represented by `manipulatedImage` into `dest` with multiple fallbacks.

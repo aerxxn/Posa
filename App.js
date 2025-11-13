@@ -48,7 +48,7 @@ export default function App() {
               headerTitle: () => (
                 <View style={{ flexDirection: "row", alignItems: "center", paddingLeft: scale(4) }}>
                   <Image
-                    source={require("./assets/hslogo.png")}
+                    source={require("./assets/applogo.png")}
                     style={{ width: scale(32), height: scale(32), marginRight: scale(8), borderRadius: moderateScale(8) }}
                   />
                   <Text style={{ color: "#fff", fontWeight: "bold", fontSize: moderateScale(20) }}>Posa</Text>

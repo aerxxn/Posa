@@ -1,4 +1,5 @@
-import * as FileSystem from 'expo-file-system/legacy';
+import * as FileSystem from 'expo-file-system';
+import { fromByteArray } from 'base64-js';
 
 // Save an image represented by `manipulatedImage` into `dest` with multiple fallbacks.
 // manipulatedImage: { uri: string, base64?: string }
@@ -75,16 +76,9 @@ export async function saveImageToDest(manipulatedImage, dest) {
     const resp = await fetch(manipulatedImage.uri);
     if (!resp.ok && resp.status !== 0) throw new Error('fetch failed: ' + resp.status);
     const arrayBuffer = await resp.arrayBuffer();
-    // Convert to base64
-    let binary = '';
+    // Convert to base64 using base64-js (reliable across RN environments)
     const bytes = new Uint8Array(arrayBuffer);
-    const chunkSize = 0x8000;
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      const chunk = bytes.subarray(i, i + chunkSize);
-      binary += String.fromCharCode.apply(null, chunk);
-    }
-    // btoa may not exist in some RN environments; guard accordingly
-    const base64 = typeof btoa === 'function' ? btoa(binary) : Buffer && Buffer.from ? Buffer.from(binary, 'binary').toString('base64') : null;
+    const base64 = fromByteArray(bytes);
     if (!base64) throw new Error('Unable to convert fetch result to base64');
     const encoding = (FileSystem.EncodingType && FileSystem.EncodingType.Base64) || 'base64';
     await FileSystem.writeAsStringAsync(dest, base64, { encoding });

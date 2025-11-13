@@ -2,7 +2,7 @@
 import CatInput from "../components/CatInput";
 import PhotoPicker from "../components/PhotoPicker";
 import * as ImageManipulator from "expo-image-manipulator";
-import * as FileSystem from "expo-file-system/legacy";
+import * as FileSystem from "expo-file-system";
 import { saveImageToDest } from "../utils/fileUtils";
 import React, { useState} from "react";
 import {

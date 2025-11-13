@@ -15,6 +15,7 @@ import styles, { colors } from "../styles";
 import { useCats } from "../CatContext";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { safeLaunchImageLibraryAsync } from "../utils/safeImagePicker";
 import { moderateScale, verticalScale } from '../scaling';
 
 //COMPONENT
@@ -72,10 +73,8 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
         return;
       }
       
-      const res = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 1,
-      });
+  const libOptions = { quality: 1 };
+  const res = await safeLaunchImageLibraryAsync(libOptions);
       if (!res.canceled && res.assets?.[0]) {
         setEditPhoto(res.assets[0].uri);
       }
@@ -84,8 +83,6 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
       Alert.alert("Error", "Failed to open image picker.");
     }
   };
-
-  const encounterNumber = totalEncounters - displayIndex;
 
   //RENDER: MAIN CARD & MODAL
   return (
@@ -107,18 +104,10 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
               ]}
             >
               <Text
-                style={{
-                  fontWeight: "bold",
-                  color: colors.primary,
-                  fontSize: moderateScale(15),
-                  marginBottom: verticalScale(2),
-                }}
-              >
-                {`Encounter #${encounterNumber ?? 0}`}
-              </Text>
-
-              <Text
-                style={[styles.encounterDate, { textAlign: "center", width: "100%" }]}
+                style={[
+                  styles.encounterDate,
+                  { textAlign: "center", width: "100%", fontWeight: "bold", fontSize: moderateScale(16) },
+                ]}
               >
                 {encounter.date}
               </Text>

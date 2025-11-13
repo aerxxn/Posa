@@ -25,13 +25,15 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     alignItems: "center",
-    paddingTop: verticalScale(5),          // small top breathing room
+    paddingTop: verticalScale(5),
+    paddingHorizontal: scale(10)// small top breathing room
   },
   scrollContainer: {
     flexGrow: 1,
     backgroundColor: colors.background,
     paddingHorizontal: scale(5),
     paddingBottom: verticalScale(40),
+    
   },
   backgroundScreen: {
     flex: 1,

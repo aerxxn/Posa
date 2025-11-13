@@ -4,9 +4,10 @@ import HelpModal from "../components/HelpModal";
 import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, ActivityIndicator, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { safeLaunchImageLibraryAsync, safeLaunchCameraAsync } from "../utils/safeImagePicker";
 import { useCats } from "../CatContext";
 import CatCard from "../components/CatCard";
-import styles from "../styles";
+import styles, { colors } from "../styles";
 
 export default function HomeScreen({ navigation, route }) {
   const { cats, loading, error } = useCats();
@@ -31,20 +32,16 @@ export default function HomeScreen({ navigation, route }) {
           Alert.alert("Permission required", "Camera permission is needed to take a photo.");
           return;
         }
-        result = await ImagePicker.launchCameraAsync({
-          mediaTypes: 'images',
-          quality: 0.8,
-        });
+  const cameraOptions = { quality: 0.8 };
+  result = await safeLaunchCameraAsync(cameraOptions);
       } else {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== "granted") {
           Alert.alert("Permission required", "Gallery access is needed to pick a photo.");
           return;
         }
-        result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: 'images',
-          quality: 0.8,
-        });
+  const libOptions = { quality: 0.8 };
+  result = await safeLaunchImageLibraryAsync(libOptions);
       }
 
       if (!result.canceled) {
@@ -60,17 +57,17 @@ export default function HomeScreen({ navigation, route }) {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color={styles.primary} />
-        <Text style={styles.loadingText}>Loading cats...</Text>
+      <View style={[styles.container]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.subtitle}>Loading cats...</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={[styles.container, styles.errorContainer]}>
-        <Text style={styles.errorText}>{error}</Text>
+      <View style={[styles.container]}>
+        <Text style={[styles.subtitle, { color: colors.danger }]}>{error}</Text>
       </View>
     );
   }

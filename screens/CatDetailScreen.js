@@ -6,6 +6,7 @@ import EditCatModal from "../components/EditCatModal";
 import FabButton from "../components/FabButton";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { safeLaunchImageLibraryAsync, safeLaunchCameraAsync } from "../utils/safeImagePicker";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -99,14 +100,20 @@ export default function CatDetailScreen({ route, navigation }) {
   //HANDLER: IMAGE PICKER (EDIT MODAL)
   const handleImagePicker = async (setImage) => {
     try {
-      const res = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: [ImagePicker.MediaType.IMAGE],
-        quality: 1,
-      });
+      // Ensure we have permission to access the media library first
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission required", "Gallery access is needed to pick a photo.");
+        return;
+      }
+
+  const options2 = { quality: 1 };
+  const res = await safeLaunchImageLibraryAsync(options2);
       if (!res.canceled && res.assets?.[0]) {
         setImage(res.assets[0].uri);
       }
     } catch (e) {
+      console.error("Image picker error:", e);
       Alert.alert("Error", "Failed to open image picker.");
     }
   };
@@ -121,20 +128,16 @@ export default function CatDetailScreen({ route, navigation }) {
           Alert.alert("Permission required", "Camera permission is needed to take a photo.");
           return;
         }
-        res = await ImagePicker.launchCameraAsync({
-          mediaTypes: [ImagePicker.MediaType.IMAGE],
-          quality: 1,
-        });
+  const cameraOptions = { quality: 1 };
+  res = await safeLaunchCameraAsync(cameraOptions);
       } else {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== "granted") {
           Alert.alert("Permission required", "Gallery access is needed to pick a photo.");
           return;
         }
-        res = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          quality: 1,
-        });
+  const libOptions = { quality: 1 };
+  res = await safeLaunchImageLibraryAsync(libOptions);
       }
 
       if (!res.canceled && res.assets?.[0]) {

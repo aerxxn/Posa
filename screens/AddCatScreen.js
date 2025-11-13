@@ -5,6 +5,8 @@
 import CatInput from "../components/CatInput";
 import React, { useState } from "react";
 import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system/legacy";
+import { saveImageToDest } from "../utils/fileUtils";
 import {
   View,
   Text,
@@ -41,27 +43,50 @@ export default function AddCatScreen({ navigation, route }) {
       const manipulatedImage = await ImageManipulator.manipulateAsync(
         imageUri,
         [{ resize: { width: 800 } }], // resize to width 800px, preserving aspect ratio
-        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG, base64: true }
       );
 
-      const newCat = {
-        name,
-        eye,
-        color,
-        behavior,
-        imageUri: manipulatedImage.uri,
-        encounters: [
-          {
-            id: Date.now(),
-            date: new Date().toLocaleDateString(),
-            location: location || "Unknown",
-            details: details || "No details provided",
-            photo: manipulatedImage.uri,
-          },
-        ],
-      };
+        // Copy the manipulated image into the app's document directory so it persists across restarts
+        const baseDir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
+        if (!baseDir) console.error('No FileSystem.documentDirectory or cacheDirectory available');
+        const ensureDir = `${baseDir}posa_images/`;
+        try {
+          await FileSystem.makeDirectoryAsync(ensureDir, { intermediates: true });
+        } catch (e) {
+          // ignore if it already exists or creation failed for a benign reason
+        }
 
-      addCat(newCat, () => navigation.goBack());
+        // Build a unique filename and copy the file
+        const extMatch = manipulatedImage.uri.match(/\.([a-zA-Z0-9]+)(?:\?|$)/);
+        const ext = extMatch ? extMatch[1] : "jpg";
+        const dest = `${ensureDir}${Date.now()}.${ext}`;
+
+        try {
+          await saveImageToDest(manipulatedImage, dest);
+        } catch (err) {
+          console.error('Failed to persist manipulated image to app storage:', err, 'dest=', dest, 'manipulatedUri=', manipulatedImage.uri);
+        }
+
+        const initialEncounter = {
+          id: Date.now(),
+          date: new Date().toLocaleDateString(),
+          location: location || "Unknown",
+          details: details || "No details provided",
+          photo: dest || manipulatedImage.uri,
+          label: 1, // initial encounter label starts at 1
+        };
+
+        const newCat = {
+          name,
+          eye,
+          color,
+          behavior,
+          imageUri: dest || manipulatedImage.uri,
+          encounters: [initialEncounter],
+          nextEncounterNumber: 2, // next encounter will get label 2
+        };
+
+        addCat(newCat, () => navigation.goBack());
     } catch (error) {
       console.error("Error processing image:", error);
       Alert.alert("Error", "Something went wrong while processing the image.");

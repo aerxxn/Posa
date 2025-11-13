@@ -1,6 +1,8 @@
 // CatContext.js
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const CatContext = createContext();
 
@@ -15,7 +17,18 @@ export const CatProvider = ({ children }) => {
     try {
       const storedCats = await AsyncStorage.getItem(STORAGE_KEY);
       if (storedCats !== null) {
-        setCats(JSON.parse(storedCats));
+        const parsed = JSON.parse(storedCats);
+
+        // Cleanup any orphaned images that are stored in our documentDirectory but no longer
+        // referenced by any cat or encounter. This helps reclaim storage when deletes failed
+        // previously or files were left behind.
+        try {
+          await cleanupOrphanImages(parsed);
+        } catch (e) {
+          console.error('Failed to cleanup orphan images on load:', e);
+        }
+
+        setCats(parsed);
       }
     } catch (e) {
       console.error("Failed to load cats from storage", e);
@@ -25,9 +38,73 @@ export const CatProvider = ({ children }) => {
     }
   };
 
+  // Remove files in documentDirectory/posa_images that are not referenced by any cat or encounter
+  async function cleanupOrphanImages(loadedCats) {
+    try {
+      const dir = `${FileSystem.documentDirectory}posa_images/`;
+      const info = await FileSystem.getInfoAsync(dir);
+      if (!info.exists) return;
+
+      const files = await FileSystem.readDirectoryAsync(dir);
+      if (!files || files.length === 0) return;
+
+      const referenced = new Set();
+      (loadedCats || []).forEach((cat) => {
+        if (cat.imageUri) referenced.add(cat.imageUri);
+        (cat.encounters || []).forEach((enc) => {
+          if (enc.photo) referenced.add(enc.photo);
+        });
+      });
+
+      for (const filename of files) {
+        const full = `${dir}${filename}`;
+        if (!referenced.has(full)) {
+          try {
+            await FileSystem.deleteAsync(full);
+            console.log('Removed orphan image:', full);
+          } catch (e) {
+            console.error('Failed to delete orphan image', full, e);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error while cleaning up orphan images:', e);
+    }
+  };
+
   useEffect(() => {
     loadCats();
   }, []);
+
+  // Run orphan cleanup whenever the app comes to the foreground so cleanup happens
+  // automatically and silently without notifying the user.
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState) => {
+      if (nextAppState === 'active') {
+        try {
+          cleanupOrphanImages(cats);
+        } catch (e) {
+          console.error('Error running orphan cleanup on app foreground:', e);
+        }
+      }
+    };
+
+    // RN >=0.65 returns a subscription with remove(), older versions use removeEventListener
+    const sub = AppState.addEventListener ? AppState.addEventListener('change', handleAppStateChange) : null;
+    if (!sub) {
+      // fallback for older RN
+      AppState.addEventListener('change', handleAppStateChange);
+    }
+
+    return () => {
+      try {
+        if (sub && sub.remove) sub.remove();
+        else AppState.removeEventListener('change', handleAppStateChange);
+      } catch (e) {
+        // ignore
+      }
+    };
+  }, [cats]);
 
   const saveCats = async (newCats) => {
     try {
@@ -40,7 +117,18 @@ export const CatProvider = ({ children }) => {
   };
 
   const addCat = (newCat, callback) => {
-    const updatedCats = [...cats, { ...newCat, id: Date.now().toString() }];
+    // Ensure new cat has a unique id and a nextEncounterNumber counter.
+    const id = Date.now().toString();
+    const nextEncounterNumber =
+      (newCat.nextEncounterNumber && Number(newCat.nextEncounterNumber)) ||
+      (newCat.encounters && newCat.encounters.length > 0
+        ? (Math.max(...newCat.encounters.map((e) => (e.label ? Number(e.label) : 0))) + 1)
+        : 1);
+
+    const updatedCats = [
+      ...cats,
+      { ...newCat, id, nextEncounterNumber },
+    ];
     saveCats(updatedCats);
     if (callback) callback();
   };
@@ -60,9 +148,28 @@ export const CatProvider = ({ children }) => {
   const addEncounter = (catId, newEncounter) => {
     const updatedCats = cats.map((cat) => {
       if (cat.id === catId) {
+        const currentEncounters = cat.encounters || [];
+
+        // Assign an id if not provided
+        const encounterId = newEncounter.id || Date.now();
+
+        // Determine label: use provided label if present, otherwise use cat.nextEncounterNumber or compute
+        let label = newEncounter.label;
+        if (label === undefined || label === null) {
+          const next = cat.nextEncounterNumber || (currentEncounters.length > 0
+            ? Math.max(...currentEncounters.map((e) => (e.label ? Number(e.label) : 0))) + 1
+            : 1);
+          label = next;
+        }
+
+        // Build the finalized encounter and update the cat's nextEncounterNumber
+        const finalizedEncounter = { ...newEncounter, id: encounterId, label };
+        const nextEncounterNumber = Math.max((cat.nextEncounterNumber || 1), Number(label) + 1);
+
         return {
           ...cat,
-          encounters: [...(cat.encounters || []), newEncounter],
+          encounters: [...currentEncounters, finalizedEncounter],
+          nextEncounterNumber,
         };
       }
       return cat;
@@ -75,13 +182,36 @@ export const CatProvider = ({ children }) => {
   const updateEncounter = (catId, encounterId, updatedEncounter) => {
     const updatedCats = cats.map(cat => {
       if (cat.id === catId) {
-        const updatedEncounters = cat.encounters.map(item =>
-          item.id === encounterId ? updatedEncounter : item
-        );
+        const updatedEncounters = cat.encounters.map(item => {
+          if (item.id === encounterId) {
+            // If the photo changed and the old photo is a local file in our documentDirectory, delete it
+            try {
+              const oldPhoto = item.photo;
+              const newPhoto = updatedEncounter.photo;
+              if (
+                oldPhoto &&
+                newPhoto &&
+                oldPhoto !== newPhoto &&
+                oldPhoto.startsWith(FileSystem.documentDirectory)
+              ) {
+                FileSystem.deleteAsync(oldPhoto).catch((e) => {
+                  console.error('Failed to delete old encounter image:', e);
+                });
+              }
+            } catch (e) {
+              console.error('Error while cleaning up old encounter image:', e);
+            }
+
+            return updatedEncounter;
+          }
+          return item;
+        });
+
         return { ...cat, encounters: updatedEncounters };
       }
       return cat;
     });
+
     saveCats(updatedCats);
   };
 
@@ -89,13 +219,59 @@ export const CatProvider = ({ children }) => {
   const deleteEncounter = (catId, encounterId) => {
     const updatedCats = cats.map(cat => {
       if (cat.id === catId) {
-        const updatedEncounters = cat.encounters.filter(
+        const encounterToDelete = (cat.encounters || []).find(item => item.id === encounterId);
+        // Remove the encounter from the array
+        const updatedEncounters = (cat.encounters || []).filter(
           item => item.id !== encounterId
         );
+
+        // Delete the photo file if it lives in our documentDirectory
+        try {
+          const photo = encounterToDelete?.photo;
+          if (photo && photo.startsWith(FileSystem.documentDirectory)) {
+            FileSystem.deleteAsync(photo).catch((e) => {
+              console.error('Failed to delete encounter image file:', e);
+            });
+          }
+        } catch (e) {
+          console.error('Error while deleting encounter image:', e);
+        }
+
         return { ...cat, encounters: updatedEncounters };
       }
       return cat;
     });
+    saveCats(updatedCats);
+  };
+
+  // Delete a cat and its stored images
+  const deleteCatWithImages = (catId) => {
+    const updatedCats = cats.filter((cat) => cat.id !== catId);
+
+    // Find the cat to delete to remove its images
+    const catToDelete = cats.find((c) => c.id === catId);
+    if (catToDelete) {
+      try {
+        const mainImage = catToDelete.imageUri;
+        if (mainImage && mainImage.startsWith(FileSystem.documentDirectory)) {
+          FileSystem.deleteAsync(mainImage).catch((e) => {
+            console.error('Failed to delete cat main image:', e);
+          });
+        }
+
+        (catToDelete.encounters || []).forEach((enc) => {
+          const p = enc.photo;
+          if (p && p.startsWith(FileSystem.documentDirectory)) {
+            FileSystem.deleteAsync(p).catch((e) => {
+              console.error('Failed to delete encounter image during cat deletion:', e);
+            });
+          }
+        });
+      } catch (e) {
+        console.error('Error while cleaning up images for deleted cat:', e);
+      }
+    }
+
     saveCats(updatedCats);
   };
 
@@ -106,7 +282,8 @@ export const CatProvider = ({ children }) => {
         loading,
         error,
   addCat,
-  deleteCat,
+  // Keep the external API the same: deleteCat will also clean up images
+  deleteCat: deleteCatWithImages,
   updateCat,
   addEncounter,
   updateEncounter, // Add the update encounter function

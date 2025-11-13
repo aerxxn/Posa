@@ -1,6 +1,7 @@
 // components/PhotoPicker.js
 import { TouchableOpacity, Image, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { safeLaunchImageLibraryAsync } from "../utils/safeImagePicker";
 import { scale, moderateScale, verticalScale } from '../scaling';
 import styles from "../styles";
 
@@ -16,10 +17,8 @@ export default function PhotoPicker({ imageUri, onChange, label }) {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") return;
 
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-    });
+  const opts = { quality: 1 };
+  const res = await safeLaunchImageLibraryAsync(opts);
     if (!res.canceled && res.assets?.[0]) onChange(res.assets[0].uri);
   };
 

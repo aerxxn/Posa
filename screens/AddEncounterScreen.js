@@ -2,6 +2,8 @@
 import CatInput from "../components/CatInput";
 import PhotoPicker from "../components/PhotoPicker";
 import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system/legacy";
+import { saveImageToDest } from "../utils/fileUtils";
 import React, { useState} from "react";
 import {
   View,
@@ -35,15 +37,34 @@ export default function AddEncounterScreen({ navigation, route }) {
       const manipulatedImage = await ImageManipulator.manipulateAsync(
         imageUri,
         [{ resize: { width: 800 } }], // keeps aspect ratio automatically
-        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+        { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG, base64: true }
       );
+
+  // Persist the manipulated image to the app's documentDirectory so it survives restarts
+  const baseDir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
+  if (!baseDir) console.error('No FileSystem.documentDirectory or cacheDirectory available');
+  const ensureDir = `${baseDir}posa_images/`;
+      try {
+        await FileSystem.makeDirectoryAsync(ensureDir, { intermediates: true });
+      } catch (e) {
+        // ignore
+      }
+
+      const extMatch = manipulatedImage.uri.match(/\.([a-zA-Z0-9]+)(?:\?|$)/);
+      const ext = extMatch ? extMatch[1] : "jpg";
+      const dest = `${ensureDir}${Date.now()}.${ext}`;
+      try {
+        await saveImageToDest(manipulatedImage, dest);
+      } catch (err) {
+        console.error('Failed to persist encounter image to app storage:', err, 'dest=', dest, 'manipulatedUri=', manipulatedImage.uri);
+      }
 
       const newEncounter = {
         id: Date.now(),
         date: new Date().toLocaleDateString(),
         location: location || "Unknown",
         details: details || "No details provided",
-        photo: manipulatedImage.uri, // use optimized photo
+        photo: dest || manipulatedImage.uri, // use persisted photo when possible
       };
 
       addEncounter(catId, newEncounter);

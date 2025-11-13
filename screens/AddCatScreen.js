@@ -61,10 +61,19 @@ export default function AddCatScreen({ navigation, route }) {
         const ext = extMatch ? extMatch[1] : "jpg";
         const dest = `${ensureDir}${Date.now()}.${ext}`;
 
+        // Persist the manipulated image into app storage and ensure it actually exists.
+        let persistedUri;
         try {
-          await saveImageToDest(manipulatedImage, dest);
+          persistedUri = await saveImageToDest(manipulatedImage, dest);
+          // Confirm the file exists
+          const info = await FileSystem.getInfoAsync(persistedUri);
+          if (!info.exists) {
+            throw new Error('Persisted file not found after save: ' + persistedUri);
+          }
         } catch (err) {
           console.error('Failed to persist manipulated image to app storage:', err, 'dest=', dest, 'manipulatedUri=', manipulatedImage.uri);
+          Alert.alert('Save failed', 'Could not save the photo to persistent storage. Please try again.');
+          return; // abort saving the cat to avoid storing a non-persistent uri
         }
 
         const initialEncounter = {
@@ -72,7 +81,7 @@ export default function AddCatScreen({ navigation, route }) {
           date: new Date().toLocaleDateString(),
           location: location || "Unknown",
           details: details || "No details provided",
-          photo: dest || manipulatedImage.uri,
+          photo: persistedUri,
           label: 1, // initial encounter label starts at 1
         };
 
@@ -81,7 +90,7 @@ export default function AddCatScreen({ navigation, route }) {
           eye,
           color,
           behavior,
-          imageUri: dest || manipulatedImage.uri,
+          imageUri: persistedUri,
           encounters: [initialEncounter],
           nextEncounterNumber: 2, // next encounter will get label 2
         };

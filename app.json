@@ -4,7 +4,7 @@
     "slug": "Posa",
     "version": "1.0.0",
     "orientation": "portrait",
-  "icon": "./assets/icon.png",
+    "icon": "./assets/applogo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/hslogo.png",
         "backgroundColor": "#F3E5D8"
       },
       "edgeToEdgeEnabled": true,
@@ -32,6 +32,12 @@
       "eas": {
         "projectId": "212526b6-f827-4d77-a50a-4d20b329a64c"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/212526b6-f827-4d77-a50a-4d20b329a64c"
     }
   }
 }

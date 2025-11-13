@@ -72,6 +72,28 @@ export const CatProvider = ({ children }) => {
     }
   };
 
+  // Safe delete helper: check existence before trying to delete to avoid "file not found" errors
+  const safeDelete = async (uri) => {
+    try {
+      if (!uri) return;
+      // Only attempt to delete files inside our documentDirectory
+      if (!uri.startsWith(FileSystem.documentDirectory)) {
+        console.log('safeDelete: skipping non-documentDirectory uri', uri);
+        return;
+      }
+      const info = await FileSystem.getInfoAsync(uri);
+      if (info.exists) {
+        await FileSystem.deleteAsync(uri);
+        console.log('safeDelete: deleted', uri);
+      } else {
+        console.log('safeDelete: file not found, skipping delete for', uri);
+      }
+    } catch (err) {
+      // Log and continue; deletion failures are non-fatal for app state
+      console.error('safeDelete: failed to delete', uri, err);
+    }
+  };
+
   useEffect(() => {
     loadCats();
   }, []);
@@ -192,11 +214,10 @@ export const CatProvider = ({ children }) => {
                 oldPhoto &&
                 newPhoto &&
                 oldPhoto !== newPhoto &&
-                oldPhoto.startsWith(FileSystem.documentDirectory)
-              ) {
-                FileSystem.deleteAsync(oldPhoto).catch((e) => {
-                  console.error('Failed to delete old encounter image:', e);
-                });
+                  oldPhoto.startsWith(FileSystem.documentDirectory)
+                ) {
+                  // Use safeDelete helper to avoid exceptions when file is already gone
+                  safeDelete(oldPhoto);
               }
             } catch (e) {
               console.error('Error while cleaning up old encounter image:', e);
@@ -229,9 +250,8 @@ export const CatProvider = ({ children }) => {
         try {
           const photo = encounterToDelete?.photo;
           if (photo && photo.startsWith(FileSystem.documentDirectory)) {
-            FileSystem.deleteAsync(photo).catch((e) => {
-              console.error('Failed to delete encounter image file:', e);
-            });
+            // Use safeDelete to avoid errors when file is missing
+            safeDelete(photo);
           }
         } catch (e) {
           console.error('Error while deleting encounter image:', e);
@@ -245,7 +265,7 @@ export const CatProvider = ({ children }) => {
   };
 
   // Delete a cat and its stored images
-  const deleteCatWithImages = (catId) => {
+  const deleteCatWithImages = async (catId) => {
     const updatedCats = cats.filter((cat) => cat.id !== catId);
 
     // Find the cat to delete to remove its images
@@ -254,19 +274,15 @@ export const CatProvider = ({ children }) => {
       try {
         const mainImage = catToDelete.imageUri;
         if (mainImage && mainImage.startsWith(FileSystem.documentDirectory)) {
-          FileSystem.deleteAsync(mainImage).catch((e) => {
-            console.error('Failed to delete cat main image:', e);
-          });
+          await safeDelete(mainImage);
         }
 
-        (catToDelete.encounters || []).forEach((enc) => {
+        for (const enc of (catToDelete.encounters || [])) {
           const p = enc.photo;
           if (p && p.startsWith(FileSystem.documentDirectory)) {
-            FileSystem.deleteAsync(p).catch((e) => {
-              console.error('Failed to delete encounter image during cat deletion:', e);
-            });
+            await safeDelete(p);
           }
-        });
+        }
       } catch (e) {
         console.error('Error while cleaning up images for deleted cat:', e);
       }

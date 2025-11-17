@@ -1,5 +1,17 @@
 {
   "cli": {
+    "version": ">= 2.0.0"
+  },
+  "build": {
+    "apk": {
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  }
+}
+{
+  "cli": {
     "version": ">= 16.19.3",
     "appVersionSource": "remote"
   },

@@ -1,0 +1,35 @@
+{
+  "files.exclude": {
+    "**/AppData/**": true,
+    "**/Downloads/**": true,
+    "**/OneDrive/**": true,
+    "**/Desktop/**": true,
+    "**/Documents/**": true,
+    "**/Pictures/**": true,
+    "**/Videos/**": true,
+    "**/node_modules/**": true,
+    "**/.git/**": true
+  },
+  "search.exclude": {
+    "**/AppData/**": true,
+    "**/Downloads/**": true,
+    "**/OneDrive/**": true,
+    "**/Desktop/**": true,
+    "**/Documents/**": true,
+    "**/Pictures/**": true,
+    "**/Videos/**": true,
+    "**/node_modules/**": true,
+    "**/.git/**": true
+  },
+  "files.watcherExclude": {
+    "**/AppData/**": true,
+    "**/Downloads/**": true,
+    "**/OneDrive/**": true,
+    "**/Desktop/**": true,
+    "**/Documents/**": true,
+    "**/Pictures/**": true,
+    "**/Videos/**": true,
+    "**/node_modules/**": true
+  },
+  "git.autoRepositoryDetection": false
+}

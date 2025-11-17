@@ -3,7 +3,7 @@
 
 //IMPORTS
 import CatInput from "../components/CatInput";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system/legacy";
 import { saveImageToDest } from "../utils/fileUtils";
@@ -30,6 +30,14 @@ export default function AddCatScreen({ navigation, route }) {
   const [location, setLocation] = useState("");
   const [details, setDetails] = useState("");
   const { addCat } = useCats();
+
+  // Refs for input focus management
+  const nameRef = useRef(null);
+  const eyeRef = useRef(null);
+  const colorRef = useRef(null);
+  const behaviorRef = useRef(null);
+  const locationRef = useRef(null);
+  const detailsRef = useRef(null);
 
   //HANDLERS: SAVE CAT
   const handleSaveCat = async () => {
@@ -130,41 +138,62 @@ export default function AddCatScreen({ navigation, route }) {
 
           {/*INPUTS*/}
           <CatInput
+            ref={nameRef}
             label="Name"
             placeholder="Enter cat's name"
             value={name}
             onChangeText={setName}
+            returnKeyType="next"
+            onSubmitEditing={() => eyeRef.current && eyeRef.current.focus && eyeRef.current.focus()}
+            blurOnSubmit={false}
           />
           <CatInput
+            ref={eyeRef}
             label="Eye Color"
             placeholder="Optional"
             value={eye}
             onChangeText={setEye}
+            returnKeyType="next"
+            onSubmitEditing={() => colorRef.current && colorRef.current.focus && colorRef.current.focus()}
+            blurOnSubmit={false}
           />
           <CatInput
+            ref={colorRef}
             label="Fur Color"
             placeholder="Optional"
             value={color}
             onChangeText={setColor}
+            returnKeyType="next"
+            onSubmitEditing={() => behaviorRef.current && behaviorRef.current.focus && behaviorRef.current.focus()}
+            blurOnSubmit={false}
           />
           <CatInput
+            ref={behaviorRef}
             label="Behavior / Personality"
             placeholder="Optional"
             value={behavior}
             onChangeText={setBehavior}
+            returnKeyType="next"
+            onSubmitEditing={() => locationRef.current && locationRef.current.focus && locationRef.current.focus()}
+            blurOnSubmit={false}
           />
 
 
           {/*FIRST ENCOUNTER SECTION*/}
           <Text style={styles.subtitle}>First Encounter</Text>
           <CatInput
+            ref={locationRef}
             style={styles.input}
             placeholder="Location of Encounter"
             placeholderTextColor="#7A5C3E"
             value={location}
             onChangeText={setLocation}
+            returnKeyType="next"
+            onSubmitEditing={() => detailsRef.current && detailsRef.current.focus && detailsRef.current.focus()}
+            blurOnSubmit={false}
           />
           <CatInput
+            ref={detailsRef}
             style={[styles.input, styles.detailsInput, styles.inputMultiline]}
             placeholder="Details of Encounter"
             placeholderTextColor="#7A5C3E"
@@ -172,6 +201,9 @@ export default function AddCatScreen({ navigation, route }) {
             onChangeText={setDetails}
             multiline
             textAlignVertical="top"
+            returnKeyType="done"
+            onSubmitEditing={handleSaveCat}
+            blurOnSubmit={true}
           />
 
           {/*SAVE BUTTON*/}

@@ -4,7 +4,7 @@ import PhotoPicker from "../components/PhotoPicker";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system/legacy";
 import { saveImageToDest } from "../utils/fileUtils";
-import React, { useState} from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -24,6 +24,9 @@ export default function AddEncounterScreen({ navigation, route }) {
   const [imageUri, setImageUri] = useState(initialImageUri || null);
   const [location, setLocation] = useState("");
   const [details, setDetails] = useState("");
+
+  const locationRef = useRef(null);
+  const detailsRef = useRef(null);
 
   // Save the new encounter
   const handleSaveEncounter = async () => {
@@ -91,15 +94,20 @@ export default function AddEncounterScreen({ navigation, route }) {
 
           {/* Location input */}
           <CatInput
+            ref={locationRef}
             style={styles.input}
             placeholder="Location of Encounter"
             placeholderTextColor="#7A5C3E"
             value={location}
             onChangeText={setLocation}
+            returnKeyType="next"
+            onSubmitEditing={() => detailsRef.current && detailsRef.current.focus && detailsRef.current.focus()}
+            blurOnSubmit={false}
           />
 
           {/* Details input */}
           <CatInput
+            ref={detailsRef}
             style={[styles.input, styles.inputMultiline]}
             placeholder="Details of Encounter"
             placeholderTextColor="#7A5C3E"
@@ -107,6 +115,9 @@ export default function AddEncounterScreen({ navigation, route }) {
             onChangeText={setDetails}
             multiline
             textAlignVertical="top"
+            returnKeyType="done"
+            onSubmitEditing={handleSaveEncounter}
+            blurOnSubmit={true}
           />
 
           {/* Save button */}

@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   Image,
   Modal,
@@ -12,6 +11,7 @@ import {
   Keyboard,
 } from "react-native";
 import styles, { colors } from "../styles";
+import CatInput from "./CatInput";
 
 export default function EditEncounterModal({
   visible,
@@ -22,6 +22,9 @@ export default function EditEncounterModal({
   handleImagePicker,
 }) {
   const { photo, location, details } = editData;
+
+  const locationRef = useRef(null);
+  const detailsRef = useRef(null);
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -44,21 +47,29 @@ export default function EditEncounterModal({
             </TouchableOpacity>
 
             {/* --- INPUTS --- */}
-            <TextInput
+            <CatInput
+              ref={locationRef}
               style={styles.input}
               placeholder="Location"
               placeholderTextColor="#7A5C3E"
               value={location}
               onChangeText={(t) => setEditData((p) => ({ ...p, location: t }))}
+              returnKeyType="next"
+              onSubmitEditing={() => detailsRef.current && detailsRef.current.focus && detailsRef.current.focus()}
+              blurOnSubmit={false}
             />
 
-            <TextInput
+            <CatInput
+              ref={detailsRef}
               style={[styles.input, styles.inputMultiline]}
               placeholder="Details"
               placeholderTextColor="#7A5C3E"
               value={details}
               onChangeText={(t) => setEditData((p) => ({ ...p, details: t }))}
               multiline
+              returnKeyType="done"
+              onSubmitEditing={onSave}
+              blurOnSubmit={true}
             />
 
             {/* --- BUTTONS --- */}

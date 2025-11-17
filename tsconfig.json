@@ -10,5 +10,10 @@
     "moduleResolution": "node",
     "resolveJsonModule": true
   },
-  "exclude": ["node_modules", "dist", "build"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build"
+  ],
+  "extends": "expo/tsconfig.base"
 }

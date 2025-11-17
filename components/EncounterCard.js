@@ -17,6 +17,9 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { safeLaunchImageLibraryAsync } from "../utils/safeImagePicker";
 import { moderateScale, verticalScale } from '../scaling';
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system/legacy';
+import { saveImageToDest } from '../utils/fileUtils';
 
 //COMPONENT
 export default function EncounterCard({ encounter, catId, onLongPress, encounterId, totalEncounters, displayIndex }) {
@@ -48,16 +51,45 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
   };
 
   //HANDLERS: SAVE EDIT
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editPhoto) {
       Alert.alert("Missing Photo", "Please select a photo for the encounter.");
       return;
     }
 
+    let finalPhoto = editPhoto;
+    try {
+      if (!finalPhoto.startsWith(FileSystem.documentDirectory)) {
+        // Resize/compress and persist into app documentDirectory
+        const manipulatedImage = await ImageManipulator.manipulateAsync(
+          finalPhoto,
+          [{ resize: { width: 800 } }],
+          { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+        );
+
+        const baseDir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
+        const ensureDir = `${baseDir}posa_images/`;
+        try { await FileSystem.makeDirectoryAsync(ensureDir, { intermediates: true }); } catch (e) { /* ignore */ }
+
+        const extMatch = manipulatedImage.uri.match(/\.([a-zA-Z0-9]+)(?:\?|$)/);
+        const ext = extMatch ? extMatch[1] : "jpg";
+        const dest = `${ensureDir}${Date.now()}.${ext}`;
+
+        try {
+          const persisted = await saveImageToDest(manipulatedImage, dest);
+          finalPhoto = persisted;
+        } catch (e) {
+          console.error('Failed to persist edited encounter image, saving original uri instead', e);
+        }
+      }
+    } catch (e) {
+      console.error('Error while processing edited encounter image:', e);
+    }
+
     updateEncounter(catId, encounterId, {
-      ...encounter, 
-      photo: editPhoto, 
-      location: editLocation, 
+      ...encounter,
+      photo: finalPhoto,
+      location: editLocation,
       details: editDetails,
     });
 

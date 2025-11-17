@@ -47,24 +47,76 @@ export const CatProvider = ({ children }) => {
 
       const files = await FileSystem.readDirectoryAsync(dir);
       if (!files || files.length === 0) return;
-
+      // Build a set of referenced URIs. Add both variants (with and without file://)
       const referenced = new Set();
+      const addRef = (u) => {
+        if (!u) return;
+        referenced.add(u);
+        if (u.startsWith('file://')) referenced.add(u.replace('file://', ''));
+        else referenced.add('file://' + u);
+      };
+
       (loadedCats || []).forEach((cat) => {
-        if (cat.imageUri) referenced.add(cat.imageUri);
+        if (cat.imageUri) addRef(cat.imageUri);
         (cat.encounters || []).forEach((enc) => {
-          if (enc.photo) referenced.add(enc.photo);
+          if (enc.photo) addRef(enc.photo);
         });
       });
 
+      // Only remove files that are unreferenced AND older than thresholdMs.
+      const thresholdMs = 2 * 60 * 1000; // 2 minutes
+
+      // Also compute a set of referenced basenames to handle slight URI differences
+      const referencedBasenames = new Set();
+      for (const r of Array.from(referenced)) {
+        try {
+          const parts = r.split('/');
+          const name = parts[parts.length - 1];
+          if (name) referencedBasenames.add(name);
+        } catch (e) {
+          /* ignore parsing errors */
+        }
+      }
+
       for (const filename of files) {
         const full = `${dir}${filename}`;
-        if (!referenced.has(full)) {
+
+        // If referenced exactly in any form, keep it.
+        if (referenced.has(full)) {
+          console.log('Keeping referenced file (exact):', full);
+          continue;
+        }
+
+        // If the filename matches the basename of any referenced URI, keep it.
+        if (referencedBasenames.has(filename)) {
+          console.log('Keeping referenced file (basename match):', full);
+          continue;
+        }
+
+        // Check file info for modification time to avoid deleting newly-created files
+        try {
+          const finfo = await FileSystem.getInfoAsync(full);
+          let ageMs = Number.POSITIVE_INFINITY;
+          if (finfo && finfo.modificationTime) {
+            const mod = Number(finfo.modificationTime) || 0;
+            const modMs = mod > 1e12 ? mod : mod * 1000;
+            ageMs = Date.now() - modMs;
+          }
+
+          if (ageMs < thresholdMs) {
+            console.log('Skipping deletion of recent unreferenced image:', full, 'ageMs:', ageMs);
+            continue;
+          }
+
+          // Safe to delete
           try {
             await FileSystem.deleteAsync(full);
             console.log('Removed orphan image:', full);
           } catch (e) {
             console.error('Failed to delete orphan image', full, e);
           }
+        } catch (e) {
+          console.error('Error while checking orphan image info:', full, e);
         }
       }
     } catch (e) {

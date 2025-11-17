@@ -6,6 +6,9 @@ import EditCatModal from "../components/EditCatModal";
 import FabButton from "../components/FabButton";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from 'expo-file-system/legacy';
+import { saveImageToDest } from "../utils/fileUtils";
 import { safeLaunchImageLibraryAsync, safeLaunchCameraAsync } from "../utils/safeImagePicker";
 import { useEffect, useState } from "react";
 import {
@@ -68,13 +71,43 @@ export default function CatDetailScreen({ route, navigation }) {
     setEditModalVisible(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
+    let finalImageUri = editableImageUri;
+
+    try {
+      // If the selected image isn't already in our documentDirectory, persist it there
+      if (finalImageUri && !finalImageUri.startsWith(FileSystem.documentDirectory)) {
+        const manipulatedImage = await ImageManipulator.manipulateAsync(
+          finalImageUri,
+          [{ resize: { width: 800 } }],
+          { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+        );
+
+        const baseDir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
+        const ensureDir = `${baseDir}posa_images/`;
+        try { await FileSystem.makeDirectoryAsync(ensureDir, { intermediates: true }); } catch (e) { /* ignore */ }
+
+        const extMatch = manipulatedImage.uri.match(/\.([a-zA-Z0-9]+)(?:\?|$)/);
+        const ext = extMatch ? extMatch[1] : "jpg";
+        const dest = `${ensureDir}${Date.now()}.${ext}`;
+
+        try {
+          const persisted = await saveImageToDest(manipulatedImage, dest);
+          finalImageUri = persisted;
+        } catch (e) {
+          console.error('Failed to persist edited cat image, will fall back to original uri', e);
+        }
+      }
+    } catch (e) {
+      console.error('Error while processing edited image:', e);
+    }
+
     updateCat(catId, {
       name: editableName,
       eye: editableEye,
       color: editableColor,
       behavior: editableBehavior,
-      imageUri: editableImageUri,
+      imageUri: finalImageUri,
     });
     setEditModalVisible(false);
   };

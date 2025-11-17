@@ -14,41 +14,55 @@ import styles from "../styles";
  * - multiline: allows multiline input
  * - style: optional extra styling
  */
-export default function CatInput({
-  label,
-  placeholder,
-  value,
-  onChangeText,
-  multiline = false,
-  style,
-}) {
-  return (
-    <View style={{ width: "100%" }}>
-      {label && (
-        <Text
-          style={{
-            fontWeight: "bold",
-            color: "#7A5C3E",
-            marginBottom: 4,
-            fontSize: 14,
-          }}
-        >
-          {label}
-        </Text>
-      )}
-      <TextInput
-        style={[
-          styles.input,
-          multiline && styles.inputMultiline,
-          { textAlignVertical: multiline ? "top" : "center" },
-          style,
-        ]}
-        placeholder={placeholder}
-        placeholderTextColor="#7A5C3E"
-        value={value}
-        onChangeText={onChangeText}
-        multiline={multiline}
-      />
-    </View>
-  );
-}
+const CatInput = React.forwardRef(
+  (
+    {
+      label,
+      placeholder,
+      value,
+      onChangeText,
+      multiline = false,
+      style,
+      returnKeyType,
+      onSubmitEditing,
+      blurOnSubmit,
+    },
+    ref
+  ) => {
+    return (
+      <View style={{ width: "100%" }}>
+        {label && (
+          <Text
+            style={{
+              fontWeight: "bold",
+              color: "#7A5C3E",
+              marginBottom: 4,
+              fontSize: 14,
+            }}
+          >
+            {label}
+          </Text>
+        )}
+        <TextInput
+          ref={ref}
+          style={[
+            styles.input,
+            multiline && styles.inputMultiline,
+            { textAlignVertical: multiline ? "top" : "center" },
+            style,
+          ]}
+          placeholder={placeholder}
+          placeholderTextColor="#7A5C3E"
+          value={value}
+          onChangeText={onChangeText}
+          multiline={multiline}
+          returnKeyType={returnKeyType}
+          onSubmitEditing={onSubmitEditing}
+          blurOnSubmit={blurOnSubmit}
+        />
+      </View>
+    );
+  }
+);
+
+export default CatInput;

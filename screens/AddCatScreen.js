@@ -23,6 +23,7 @@ export default function AddCatScreen({ navigation, route }) {
   //STATE & CONTEXT
   const { imageUri: initialImageUri } = route.params || {};
   const [imageUri] = useState(initialImageUri || null);
+  const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
   const [eye, setEye] = useState("");
   const [color, setColor] = useState("");
@@ -41,10 +42,16 @@ export default function AddCatScreen({ navigation, route }) {
 
   //HANDLERS: SAVE CAT
   const handleSaveCat = async () => {
+    if (isSaving) {
+      return;
+    }
+
     if (!name || !imageUri) {
       Alert.alert("Missing Info", "Please enter the cat's name and select a photo.");
       return;
     }
+
+    setIsSaving(true);
 
     try {
       // 🔧 Resize and compress image before saving
@@ -56,7 +63,9 @@ export default function AddCatScreen({ navigation, route }) {
 
         // Copy the manipulated image into the app's document directory so it persists across restarts
         const baseDir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
-        if (!baseDir) console.error('No FileSystem.documentDirectory or cacheDirectory available');
+        if (!baseDir) {
+          throw new Error('No FileSystem.documentDirectory or cacheDirectory available');
+        }
         const ensureDir = `${baseDir}posa_images/`;
         try {
           await FileSystem.makeDirectoryAsync(ensureDir, { intermediates: true });
@@ -103,10 +112,13 @@ export default function AddCatScreen({ navigation, route }) {
           nextEncounterNumber: 2, // next encounter will get label 2
         };
 
-        addCat(newCat, () => navigation.goBack());
+        await addCat(newCat);
+        navigation.goBack();
     } catch (error) {
       console.error("Error processing image:", error);
       Alert.alert("Error", "Something went wrong while processing the image.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -207,7 +219,7 @@ export default function AddCatScreen({ navigation, route }) {
           />
 
           {/*SAVE BUTTON*/}
-          <TouchableOpacity style={[styles.button]} onPress={handleSaveCat}>
+          <TouchableOpacity style={[styles.button, isSaving && { opacity: 0.7 }]} onPress={handleSaveCat} disabled={isSaving}>
             <Text style={styles.buttonText}>Save Cat</Text>
           </TouchableOpacity>
 

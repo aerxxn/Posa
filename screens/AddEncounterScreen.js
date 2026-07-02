@@ -17,11 +17,12 @@ import styles from "../styles";
 
 export default function AddEncounterScreen({ navigation, route }) {
   // Accept pre-selected imageUri (if any) and catId from navigation params
-  const { catId, catName, imageUri: initialImageUri } = route.params || {};
+  const { catId, imageUri: initialImageUri } = route.params || {};
   const { addEncounter } = useCats();
 
   // Start state with the preselected URI if provided
   const [imageUri, setImageUri] = useState(initialImageUri || null);
+  const [isSaving, setIsSaving] = useState(false);
   const [location, setLocation] = useState("");
   const [details, setDetails] = useState("");
 
@@ -30,10 +31,16 @@ export default function AddEncounterScreen({ navigation, route }) {
 
   // Save the new encounter
   const handleSaveEncounter = async () => {
+    if (isSaving) {
+      return;
+    }
+
     if (!imageUri) {
       Alert.alert("Missing Photo", "Please take or select a photo for the encounter.");
       return;
     }
+
+    setIsSaving(true);
 
     try {
       // 🔧 Resize & compress before saving
@@ -43,10 +50,12 @@ export default function AddEncounterScreen({ navigation, route }) {
         { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG, base64: true }
       );
 
-  // Persist the manipulated image to the app's documentDirectory so it survives restarts
-  const baseDir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
-  if (!baseDir) console.error('No FileSystem.documentDirectory or cacheDirectory available');
-  const ensureDir = `${baseDir}posa_images/`;
+      // Persist the manipulated image to the app's documentDirectory so it survives restarts
+      const baseDir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
+      if (!baseDir) {
+        throw new Error('No FileSystem.documentDirectory or cacheDirectory available');
+      }
+      const ensureDir = `${baseDir}posa_images/`;
       try {
         await FileSystem.makeDirectoryAsync(ensureDir, { intermediates: true });
       } catch (e) {
@@ -56,10 +65,13 @@ export default function AddEncounterScreen({ navigation, route }) {
       const extMatch = manipulatedImage.uri.match(/\.([a-zA-Z0-9]+)(?:\?|$)/);
       const ext = extMatch ? extMatch[1] : "jpg";
       const dest = `${ensureDir}${Date.now()}.${ext}`;
+      let persistedUri;
       try {
-        await saveImageToDest(manipulatedImage, dest);
+        persistedUri = await saveImageToDest(manipulatedImage, dest);
       } catch (err) {
         console.error('Failed to persist encounter image to app storage:', err, 'dest=', dest, 'manipulatedUri=', manipulatedImage.uri);
+        Alert.alert('Save failed', 'Could not save the photo to persistent storage. Please try again.');
+        return;
       }
 
       const newEncounter = {
@@ -67,14 +79,16 @@ export default function AddEncounterScreen({ navigation, route }) {
         date: new Date().toLocaleDateString(),
         location: location || "Unknown",
         details: details || "No details provided",
-        photo: dest || manipulatedImage.uri, // use persisted photo when possible
+        photo: persistedUri,
       };
 
-      addEncounter(catId, newEncounter);
+      await addEncounter(catId, newEncounter);
       navigation.goBack();
     } catch (error) {
       console.error("Error processing image:", error);
       Alert.alert("Error", "Something went wrong while processing the image.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -121,7 +135,7 @@ export default function AddEncounterScreen({ navigation, route }) {
           />
 
           {/* Save button */}
-          <TouchableOpacity style={styles.button} onPress={handleSaveEncounter}>
+          <TouchableOpacity style={[styles.button, isSaving && { opacity: 0.7 }]} onPress={handleSaveEncounter} disabled={isSaving}>
             <Text style={styles.buttonText}>Save Encounter</Text>
           </TouchableOpacity>
         </View>

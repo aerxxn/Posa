@@ -37,16 +37,32 @@ export default function PhotoPicker({ imageUri, onChange, label }) {
         </Text>
       )}
       <TouchableOpacity onPress={pickImage}>
-        <Image
-          source={{ uri: imageUri }}
-          style={{
-            width: scale(200),
-            height: scale(200),
-            borderRadius: moderateScale(12),
-            marginBottom: verticalScale(6),
-            backgroundColor: "#f0e6d8",
-          }}
-        />
+        {imageUri ? (
+          <Image
+            source={{ uri: imageUri }}
+            style={{
+              width: scale(200),
+              height: scale(200),
+              borderRadius: moderateScale(12),
+              marginBottom: verticalScale(6),
+              backgroundColor: "#f0e6d8",
+            }}
+          />
+        ) : (
+          <View
+            style={{
+              width: scale(200),
+              height: scale(200),
+              borderRadius: moderateScale(12),
+              marginBottom: verticalScale(6),
+              backgroundColor: "#f0e6d8",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: "#7A5C3E", textAlign: "center" }}>Tap to choose a photo</Text>
+          </View>
+        )}
         <Text style={{ color: "#7A5C3E", alignSelf:"center"}}>Change Photo</Text>
       </TouchableOpacity>
     </View>

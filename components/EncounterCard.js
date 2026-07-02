@@ -22,7 +22,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { saveImageToDest } from '../utils/fileUtils';
 
 //COMPONENT
-export default function EncounterCard({ encounter, catId, onLongPress, encounterId, totalEncounters, displayIndex }) {
+export default function EncounterCard({ encounter, catId, onLongPress, encounterId }) {
   const { deleteEncounter, updateEncounter } = useCats();
 
   //STATE
@@ -37,7 +37,7 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
     Alert.alert("Delete Encounter", "Are you sure you want to delete this encounter?", [
       { text: "Cancel", style: "cancel" },
       // The catId and encounterId are correctly sourced from props here
-      { text: "Delete", onPress: () => deleteEncounter(catId, encounterId), style: "destructive" },
+      { text: "Delete", onPress: async () => { await deleteEncounter(catId, encounterId); }, style: "destructive" },
     ]);
   };
 
@@ -68,6 +68,9 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
         );
 
         const baseDir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
+        if (!baseDir) {
+          throw new Error('No FileSystem.documentDirectory or cacheDirectory available');
+        }
         const ensureDir = `${baseDir}posa_images/`;
         try { await FileSystem.makeDirectoryAsync(ensureDir, { intermediates: true }); } catch (e) { /* ignore */ }
 
@@ -86,7 +89,7 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
       console.error('Error while processing edited encounter image:', e);
     }
 
-    updateEncounter(catId, encounterId, {
+    await updateEncounter(catId, encounterId, {
       ...encounter,
       photo: finalPhoto,
       location: editLocation,

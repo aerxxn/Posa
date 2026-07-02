@@ -1,5 +1,5 @@
 // CatContext.js
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -10,6 +10,7 @@ export const CatProvider = ({ children }) => {
   const [cats, setCats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const catsRef = useRef(cats);
 
   const STORAGE_KEY = "@Posa:cats";
 
@@ -83,13 +84,11 @@ export const CatProvider = ({ children }) => {
 
         // If referenced exactly in any form, keep it.
         if (referenced.has(full)) {
-          console.log('Keeping referenced file (exact):', full);
           continue;
         }
 
         // If the filename matches the basename of any referenced URI, keep it.
         if (referencedBasenames.has(filename)) {
-          console.log('Keeping referenced file (basename match):', full);
           continue;
         }
 
@@ -104,14 +103,12 @@ export const CatProvider = ({ children }) => {
           }
 
           if (ageMs < thresholdMs) {
-            console.log('Skipping deletion of recent unreferenced image:', full, 'ageMs:', ageMs);
             continue;
           }
 
           // Safe to delete
           try {
             await FileSystem.deleteAsync(full);
-            console.log('Removed orphan image:', full);
           } catch (e) {
             console.error('Failed to delete orphan image', full, e);
           }
@@ -130,15 +127,11 @@ export const CatProvider = ({ children }) => {
       if (!uri) return;
       // Only attempt to delete files inside our documentDirectory
       if (!uri.startsWith(FileSystem.documentDirectory)) {
-        console.log('safeDelete: skipping non-documentDirectory uri', uri);
         return;
       }
       const info = await FileSystem.getInfoAsync(uri);
       if (info.exists) {
         await FileSystem.deleteAsync(uri);
-        console.log('safeDelete: deleted', uri);
-      } else {
-        console.log('safeDelete: file not found, skipping delete for', uri);
       }
     } catch (err) {
       // Log and continue; deletion failures are non-fatal for app state
@@ -153,13 +146,15 @@ export const CatProvider = ({ children }) => {
   // Run orphan cleanup whenever the app comes to the foreground so cleanup happens
   // automatically and silently without notifying the user.
   useEffect(() => {
+    catsRef.current = cats;
+  }, [cats]);
+
+  useEffect(() => {
     const handleAppStateChange = (nextAppState) => {
       if (nextAppState === 'active') {
-        try {
-          cleanupOrphanImages(cats);
-        } catch (e) {
+        cleanupOrphanImages(catsRef.current).catch((e) => {
           console.error('Error running orphan cleanup on app foreground:', e);
-        }
+        });
       }
     };
 
@@ -178,7 +173,7 @@ export const CatProvider = ({ children }) => {
         // ignore
       }
     };
-  }, [cats]);
+  }, []);
 
   const saveCats = async (newCats) => {
     try {
@@ -187,6 +182,7 @@ export const CatProvider = ({ children }) => {
     } catch (e) {
       console.error("Failed to save cats", e);
       setError("Failed to save data. Please try again.");
+      throw e;
     }
   };
 
@@ -203,20 +199,25 @@ export const CatProvider = ({ children }) => {
       ...cats,
       { ...newCat, id, nextEncounterNumber },
     ];
-    saveCats(updatedCats);
-    if (callback) callback();
+    const savePromise = saveCats(updatedCats);
+    if (callback) {
+      savePromise.then(callback).catch(() => {
+        // saveCats already logged the failure; don't invoke the success callback.
+      });
+    }
+    return savePromise;
   };
 
   const deleteCat = (catId) => {
     const updatedCats = cats.filter((cat) => cat.id !== catId);
-    saveCats(updatedCats);
+    return saveCats(updatedCats);
   };
 
   const updateCat = (catId, updatedCatData) => {
     const updatedCats = cats.map((cat) =>
       cat.id === catId ? { ...cat, ...updatedCatData } : cat
     );
-    saveCats(updatedCats);
+    return saveCats(updatedCats);
   };
 
   const addEncounter = (catId, newEncounter) => {
@@ -248,15 +249,16 @@ export const CatProvider = ({ children }) => {
       }
       return cat;
     });
-    saveCats(updatedCats);
+    return saveCats(updatedCats);
   };
 
 
   // Update an existing encounter for a cat
-  const updateEncounter = (catId, encounterId, updatedEncounter) => {
+  const updateEncounter = async (catId, encounterId, updatedEncounter) => {
+    const deletions = [];
     const updatedCats = cats.map(cat => {
       if (cat.id === catId) {
-        const updatedEncounters = cat.encounters.map(item => {
+        const updatedEncounters = (cat.encounters || []).map(item => {
           if (item.id === encounterId) {
             // If the photo changed and the old photo is a local file in our documentDirectory, delete it
             try {
@@ -266,10 +268,9 @@ export const CatProvider = ({ children }) => {
                 oldPhoto &&
                 newPhoto &&
                 oldPhoto !== newPhoto &&
-                  oldPhoto.startsWith(FileSystem.documentDirectory)
-                ) {
-                  // Use safeDelete helper to avoid exceptions when file is already gone
-                  safeDelete(oldPhoto);
+                oldPhoto.startsWith(FileSystem.documentDirectory)
+              ) {
+                deletions.push(safeDelete(oldPhoto));
               }
             } catch (e) {
               console.error('Error while cleaning up old encounter image:', e);
@@ -285,11 +286,13 @@ export const CatProvider = ({ children }) => {
       return cat;
     });
 
-    saveCats(updatedCats);
+    await Promise.all(deletions);
+    return saveCats(updatedCats);
   };
 
   // Add this new function to handle encounter deletion
-  const deleteEncounter = (catId, encounterId) => {
+  const deleteEncounter = async (catId, encounterId) => {
+    const deletions = [];
     const updatedCats = cats.map(cat => {
       if (cat.id === catId) {
         const encounterToDelete = (cat.encounters || []).find(item => item.id === encounterId);
@@ -303,7 +306,7 @@ export const CatProvider = ({ children }) => {
           const photo = encounterToDelete?.photo;
           if (photo && photo.startsWith(FileSystem.documentDirectory)) {
             // Use safeDelete to avoid errors when file is missing
-            safeDelete(photo);
+            deletions.push(safeDelete(photo));
           }
         } catch (e) {
           console.error('Error while deleting encounter image:', e);
@@ -313,7 +316,9 @@ export const CatProvider = ({ children }) => {
       }
       return cat;
     });
-    saveCats(updatedCats);
+
+    await Promise.all(deletions);
+    return saveCats(updatedCats);
   };
 
   // Delete a cat and its stored images
@@ -340,7 +345,7 @@ export const CatProvider = ({ children }) => {
       }
     }
 
-    saveCats(updatedCats);
+    return saveCats(updatedCats);
   };
 
   return (

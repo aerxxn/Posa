@@ -58,6 +58,12 @@ export default function CatDetailScreen({ route, navigation }) {
   }, [cat]);
   
   // If cat not found (e.g. deleted), show alert and go back
+  useEffect(() => {
+    if (!cat) {
+      navigation.goBack();
+    }
+  }, [cat, navigation]);
+
   if (!cat) {
     return (
       <View style={styles.container}>
@@ -84,6 +90,9 @@ export default function CatDetailScreen({ route, navigation }) {
         );
 
         const baseDir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
+        if (!baseDir) {
+          throw new Error('No FileSystem.documentDirectory or cacheDirectory available');
+        }
         const ensureDir = `${baseDir}posa_images/`;
         try { await FileSystem.makeDirectoryAsync(ensureDir, { intermediates: true }); } catch (e) { /* ignore */ }
 
@@ -102,7 +111,7 @@ export default function CatDetailScreen({ route, navigation }) {
       console.error('Error while processing edited image:', e);
     }
 
-    updateCat(catId, {
+    await updateCat(catId, {
       name: editableName,
       eye: editableEye,
       color: editableColor,
@@ -120,9 +129,14 @@ export default function CatDetailScreen({ route, navigation }) {
         { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
-          onPress: () => {
-            deleteCat(catId);
-            navigation.goBack();
+          onPress: async () => {
+            try {
+              await deleteCat(catId);
+              navigation.goBack();
+            } catch (e) {
+              console.error('Failed to delete cat:', e);
+              Alert.alert('Delete failed', 'Could not delete the cat. Please try again.');
+            }
           },
           style: "destructive",
         },
@@ -246,8 +260,6 @@ export default function CatDetailScreen({ route, navigation }) {
             encounter={item}
             catId={cat.id}
             encounterId={item.id}
-            totalEncounters={cat.encounters?.length ?? 0}
-            displayIndex={index}
             onLongPress={() => {
               setCurrentImageUri(item.photo);
               setModalVisible(true);

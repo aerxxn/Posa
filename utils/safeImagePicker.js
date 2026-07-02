@@ -9,33 +9,18 @@ const stripMediaTypes = (opts = {}) => {
   if (!opts) return {};
   const cleaned = { ...opts };
   if (Object.prototype.hasOwnProperty.call(cleaned, 'mediaTypes')) {
-    // Log defensively to help debug if any code still passes mediaTypes
-    console.warn('safeImagePicker: removing mediaTypes from options before calling native picker', cleaned.mediaTypes);
     delete cleaned.mediaTypes;
   }
   return cleaned;
 };
 
 export async function safeLaunchImageLibraryAsync(options) {
-  // Log the (possibly uncleaned) incoming options to aid debugging on device
-  try {
-    console.log('safeImagePicker: launchImageLibraryAsync called with options:', options);
-  } catch (e) {
-    /* ignore logging errors */
-  }
   const opts = stripMediaTypes(options);
-  console.log('safeImagePicker: calling native launchImageLibraryAsync with options:', opts);
   return ImagePicker.launchImageLibraryAsync(opts);
 }
 
 export async function safeLaunchCameraAsync(options) {
-  try {
-    console.log('safeImagePicker: launchCameraAsync called with options:', options);
-  } catch (e) {
-    /* ignore logging errors */
-  }
   const opts = stripMediaTypes(options);
-  console.log('safeImagePicker: calling native launchCameraAsync with options:', opts);
   return ImagePicker.launchCameraAsync(opts);
 }
 

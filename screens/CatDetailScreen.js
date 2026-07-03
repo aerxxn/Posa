@@ -89,9 +89,9 @@ export default function CatDetailScreen({ route, navigation }) {
           { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG, base64: true }
         );
 
-        const baseDir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
+        const baseDir = FileSystem.documentDirectory;
         if (!baseDir) {
-          throw new Error('No FileSystem.documentDirectory or cacheDirectory available');
+          throw new Error('No FileSystem.documentDirectory available');
         }
         const ensureDir = `${baseDir}posa_images/`;
         try { await FileSystem.makeDirectoryAsync(ensureDir, { intermediates: true }); } catch (e) { /* ignore */ }

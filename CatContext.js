@@ -1,6 +1,5 @@
 // CatContext.js
-import React, { createContext, useContext, useState, useEffect, useRef } from "react";
-import { AppState } from 'react-native';
+import React, { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
 
@@ -10,7 +9,6 @@ export const CatProvider = ({ children }) => {
   const [cats, setCats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const catsRef = useRef(cats);
 
   const STORAGE_KEY = "@Posa:cats";
 
@@ -20,15 +18,6 @@ export const CatProvider = ({ children }) => {
       if (storedCats !== null) {
         const parsed = JSON.parse(storedCats);
 
-        // Cleanup any orphaned images that are stored in our documentDirectory but no longer
-        // referenced by any cat or encounter. This helps reclaim storage when deletes failed
-        // previously or files were left behind.
-        try {
-          await cleanupOrphanImages(parsed);
-        } catch (e) {
-          console.error('Failed to cleanup orphan images on load:', e);
-        }
-
         setCats(parsed);
       }
     } catch (e) {
@@ -36,88 +25,6 @@ export const CatProvider = ({ children }) => {
       setError("Failed to load your cats. Please restart the app.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Remove files in documentDirectory/posa_images that are not referenced by any cat or encounter
-  async function cleanupOrphanImages(loadedCats) {
-    try {
-      const dir = `${FileSystem.documentDirectory}posa_images/`;
-      const info = await FileSystem.getInfoAsync(dir);
-      if (!info.exists) return;
-
-      const files = await FileSystem.readDirectoryAsync(dir);
-      if (!files || files.length === 0) return;
-      // Build a set of referenced URIs. Add both variants (with and without file://)
-      const referenced = new Set();
-      const addRef = (u) => {
-        if (!u) return;
-        referenced.add(u);
-        if (u.startsWith('file://')) referenced.add(u.replace('file://', ''));
-        else referenced.add('file://' + u);
-      };
-
-      (loadedCats || []).forEach((cat) => {
-        if (cat.imageUri) addRef(cat.imageUri);
-        (cat.encounters || []).forEach((enc) => {
-          if (enc.photo) addRef(enc.photo);
-        });
-      });
-
-      // Only remove files that are unreferenced AND older than thresholdMs.
-      const thresholdMs = 2 * 60 * 1000; // 2 minutes
-
-      // Also compute a set of referenced basenames to handle slight URI differences
-      const referencedBasenames = new Set();
-      for (const r of Array.from(referenced)) {
-        try {
-          const parts = r.split('/');
-          const name = parts[parts.length - 1];
-          if (name) referencedBasenames.add(name);
-        } catch (e) {
-          /* ignore parsing errors */
-        }
-      }
-
-      for (const filename of files) {
-        const full = `${dir}${filename}`;
-
-        // If referenced exactly in any form, keep it.
-        if (referenced.has(full)) {
-          continue;
-        }
-
-        // If the filename matches the basename of any referenced URI, keep it.
-        if (referencedBasenames.has(filename)) {
-          continue;
-        }
-
-        // Check file info for modification time to avoid deleting newly-created files
-        try {
-          const finfo = await FileSystem.getInfoAsync(full);
-          let ageMs = Number.POSITIVE_INFINITY;
-          if (finfo && finfo.modificationTime) {
-            const mod = Number(finfo.modificationTime) || 0;
-            const modMs = mod > 1e12 ? mod : mod * 1000;
-            ageMs = Date.now() - modMs;
-          }
-
-          if (ageMs < thresholdMs) {
-            continue;
-          }
-
-          // Safe to delete
-          try {
-            await FileSystem.deleteAsync(full);
-          } catch (e) {
-            console.error('Failed to delete orphan image', full, e);
-          }
-        } catch (e) {
-          console.error('Error while checking orphan image info:', full, e);
-        }
-      }
-    } catch (e) {
-      console.error('Error while cleaning up orphan images:', e);
     }
   };
 
@@ -141,38 +48,6 @@ export const CatProvider = ({ children }) => {
 
   useEffect(() => {
     loadCats();
-  }, []);
-
-  // Run orphan cleanup whenever the app comes to the foreground so cleanup happens
-  // automatically and silently without notifying the user.
-  useEffect(() => {
-    catsRef.current = cats;
-  }, [cats]);
-
-  useEffect(() => {
-    const handleAppStateChange = (nextAppState) => {
-      if (nextAppState === 'active') {
-        cleanupOrphanImages(catsRef.current).catch((e) => {
-          console.error('Error running orphan cleanup on app foreground:', e);
-        });
-      }
-    };
-
-    // RN >=0.65 returns a subscription with remove(), older versions use removeEventListener
-    const sub = AppState.addEventListener ? AppState.addEventListener('change', handleAppStateChange) : null;
-    if (!sub) {
-      // fallback for older RN
-      AppState.addEventListener('change', handleAppStateChange);
-    }
-
-    return () => {
-      try {
-        if (sub && sub.remove) sub.remove();
-        else AppState.removeEventListener('change', handleAppStateChange);
-      } catch (e) {
-        // ignore
-      }
-    };
   }, []);
 
   const saveCats = async (newCats) => {

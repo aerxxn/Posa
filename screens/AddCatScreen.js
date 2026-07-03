@@ -62,9 +62,9 @@ export default function AddCatScreen({ navigation, route }) {
       );
 
         // Copy the manipulated image into the app's document directory so it persists across restarts
-        const baseDir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
+        const baseDir = FileSystem.documentDirectory;
         if (!baseDir) {
-          throw new Error('No FileSystem.documentDirectory or cacheDirectory available');
+          throw new Error('No FileSystem.documentDirectory available');
         }
         const ensureDir = `${baseDir}posa_images/`;
         try {

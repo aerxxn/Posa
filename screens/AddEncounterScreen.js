@@ -51,9 +51,9 @@ export default function AddEncounterScreen({ navigation, route }) {
       );
 
       // Persist the manipulated image to the app's documentDirectory so it survives restarts
-      const baseDir = FileSystem.documentDirectory || FileSystem.cacheDirectory;
+      const baseDir = FileSystem.documentDirectory;
       if (!baseDir) {
-        throw new Error('No FileSystem.documentDirectory or cacheDirectory available');
+        throw new Error('No FileSystem.documentDirectory available');
       }
       const ensureDir = `${baseDir}posa_images/`;
       try {

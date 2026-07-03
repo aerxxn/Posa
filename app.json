@@ -6,12 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/applogo.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/applogo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true
     },
@@ -20,7 +14,6 @@
         "foregroundImage": "./assets/applogo.png",
         "backgroundColor": "#F3E5D8"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.Aeron29.Posa",
       "softwareKeyboardLayoutMode": "pan"
     },
@@ -34,12 +27,6 @@
       "eas": {
         "projectId": "212526b6-f827-4d77-a50a-4d20b329a64c"
       }
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/212526b6-f827-4d77-a50a-4d20b329a64c"
     }
   }
 }

@@ -16,7 +16,7 @@ export const colors = {
   border: "#D1C4B5",
   shadow: "#000",
   accent: "#A68A64",
-  cancel: "#B0B0B0", // Neutral gray for Cancel
+  cancel: "#B0B0B0", 
 };
 
 export default StyleSheet.create({
@@ -31,7 +31,7 @@ export default StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: scale(5),
+    paddingHorizontal: scale(10),
     paddingBottom: verticalScale(40),
     
   },
@@ -123,6 +123,16 @@ export default StyleSheet.create({
     height: verticalScale(90),
     textAlignVertical: "top",
   },
+  attributeRow: {
+    flexDirection: "row",
+    gap: scale(8),
+    width: "95%",
+    alignSelf: "center",
+  },
+  attributeColumn: {
+    flex: 1,
+    width: "auto",
+  },
 
   // ===== BUTTONS =====
   button: {
@@ -187,9 +197,65 @@ export default StyleSheet.create({
     color: colors.subtleText,
     marginBottom: verticalScale(5),
   },
+  detailRow: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: verticalScale(12),
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(92, 64, 51, 0.18)",
+  },
+  detailRowLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 1,
+  },
+  detailRowLabel: {
+    marginLeft: scale(8),
+    fontSize: moderateScale(15),
+    color: colors.text,
+    fontWeight: "600",
+  },
+  detailRowValue: {
+    fontSize: moderateScale(15),
+    color: colors.subtleText,
+    marginLeft: scale(12),
+    textAlign: "right",
+  },
+  detailValueWrap: {
+    flex: 1,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "flex-end",
+    marginLeft: scale(12),
+  },
+  detailChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: scale(8),
+    paddingVertical: verticalScale(4),
+    borderRadius: moderateScale(999),
+    backgroundColor: "rgba(92, 64, 51, 0.06)",
+    marginLeft: scale(6),
+    marginTop: verticalScale(4),
+  },
+  detailChipDot: {
+    width: moderateScale(10),
+    height: moderateScale(10),
+    borderRadius: moderateScale(5),
+    marginRight: scale(6),
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.12)",
+  },
+  detailChipText: {
+    fontSize: moderateScale(13),
+    color: colors.text,
+    fontWeight: "600",
+  },
   sectionTitle: {
-    alignSelf: "center",
-    fontSize: moderateScale(25),
+    alignSelf: "left",
+    fontSize: moderateScale(18),
     fontWeight: "bold",
     color: colors.text,
     marginTop: verticalScale(10),

@@ -1,4 +1,6 @@
 import CatInput from "../components/CatInput";
+import AttributePicker from "../components/AttributePicker";
+import { BEHAVIOR_OPTIONS, EYE_COLOR_OPTIONS, FUR_COLOR_OPTIONS } from "../utils/catAttributes";
 import React, { useRef, useEffect } from 'react';
 import {
   View,
@@ -59,42 +61,43 @@ export default function EditCatModal({
               value={name}
               onChangeText={(t) => setEditableCat((p) => ({ ...p, name: t }))}
               returnKeyType="next"
-              onSubmitEditing={() => eyeRef.current && eyeRef.current.focus && eyeRef.current.focus()}
+              onSubmitEditing={() => eyeRef.current && eyeRef.current.open && eyeRef.current.open()}
               blurOnSubmit={false}
             />
-            <CatInput
-              ref={eyeRef}
-              style={styles.input}
-              label="Eye Color"
-              placeholder="Eye Color"
-              value={eye}
-              onChangeText={(t) => setEditableCat((p) => ({ ...p, eye: t }))}
-              returnKeyType="next"
-              onSubmitEditing={() => colorRef.current && colorRef.current.focus && colorRef.current.focus()}
-              blurOnSubmit={false}
-            />
-            <CatInput
-              ref={colorRef}
-              style={styles.input}
-              label="Fur"
-              placeholder="Fur Color"
-              value={color}
-              onChangeText={(t) => setEditableCat((p) => ({ ...p, color: t }))}
-              returnKeyType="next"
-              onSubmitEditing={() => behaviorRef.current && behaviorRef.current.focus && behaviorRef.current.focus()}
-              blurOnSubmit={false}
-            />
-            <CatInput
+            <View style={styles.attributeRow}>
+              <AttributePicker
+                ref={eyeRef}
+                label="Eye Color"
+                title="Select eye colors"
+                placeholder="Select up to 2 colors"
+                value={eye}
+                onChange={(t) => setEditableCat((p) => ({ ...p, eye: t }))}
+                options={EYE_COLOR_OPTIONS}
+                maxSelections={2}
+                containerStyle={styles.attributeColumn}
+              />
+              <AttributePicker
+                ref={colorRef}
+                label="Fur Color"
+                title="Select fur colors"
+                placeholder="Select up to 3 colors"
+                value={color}
+                onChange={(t) => setEditableCat((p) => ({ ...p, color: t }))}
+                options={FUR_COLOR_OPTIONS}
+                maxSelections={3}
+                containerStyle={styles.attributeColumn}
+              />
+            </View>
+            <AttributePicker
               ref={behaviorRef}
-              style={[styles.input, styles.inputMultiline]}
               label="Behavior / Personality"
-              placeholder="Behavior"
+              title="Select behavior"
+              placeholder="Choose 1 behavior"
               value={behavior}
-              onChangeText={(t) => setEditableCat((p) => ({ ...p, behavior: t }))}
-              multiline
-              returnKeyType="done"
-              onSubmitEditing={onSave}
-              blurOnSubmit={true}
+              onChange={(t) => setEditableCat((p) => ({ ...p, behavior: t }))}
+              options={BEHAVIOR_OPTIONS}
+              maxSelections={1}
+              showSwatches={false}
             />
 
             {/* Buttons */}

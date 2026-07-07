@@ -80,6 +80,13 @@ export default function EncounterCard({ encounter, catId, onLongPress, encounter
 
         try {
           const persisted = await saveImageToDest(manipulatedImage, dest);
+          //Verify that the file actually exists
+          const info = await FileSystem.getInfoAsync(persisted);
+
+          if (!info.exists){
+            throw new Error("Persisted encounter image was not found after saving.");
+          }
+          
           finalPhoto = persisted;
         } catch (e) {
           console.error('Failed to persist edited encounter image, saving original uri instead', e);

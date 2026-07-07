@@ -68,6 +68,12 @@ export default function AddEncounterScreen({ navigation, route }) {
       let persistedUri;
       try {
         persistedUri = await saveImageToDest(manipulatedImage, dest);
+        
+        const info = await FileSystem.getInfoAsync(persistedUri);
+
+        if (!info.exists){
+          throw new Error ("Persisted encounter image was not found after saving.");
+        }
       } catch (err) {
         console.error('Failed to persist encounter image to app storage:', err, 'dest=', dest, 'manipulatedUri=', manipulatedImage.uri);
         Alert.alert('Save failed', 'Could not save the photo to persistent storage. Please try again.');

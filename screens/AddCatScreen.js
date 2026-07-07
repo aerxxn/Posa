@@ -3,6 +3,7 @@
 
 //IMPORTS
 import CatInput from "../components/CatInput";
+import AttributePicker from "../components/AttributePicker";
 import React, { useState, useRef } from "react";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system/legacy";
@@ -17,6 +18,7 @@ import {
 } from "react-native";
 import { useCats } from "../CatContext";
 import styles from "../styles";
+import { BEHAVIOR_OPTIONS, EYE_COLOR_OPTIONS, FUR_COLOR_OPTIONS } from "../utils/catAttributes";
 
 //COMPONENT
 export default function AddCatScreen({ navigation, route }) {
@@ -156,38 +158,43 @@ export default function AddCatScreen({ navigation, route }) {
             value={name}
             onChangeText={setName}
             returnKeyType="next"
-            onSubmitEditing={() => eyeRef.current && eyeRef.current.focus && eyeRef.current.focus()}
+            onSubmitEditing={() => eyeRef.current && eyeRef.current.open && eyeRef.current.open()}
             blurOnSubmit={false}
           />
-          <CatInput
-            ref={eyeRef}
-            label="Eye Color"
-            placeholder="Optional"
-            value={eye}
-            onChangeText={setEye}
-            returnKeyType="next"
-            onSubmitEditing={() => colorRef.current && colorRef.current.focus && colorRef.current.focus()}
-            blurOnSubmit={false}
-          />
-          <CatInput
-            ref={colorRef}
-            label="Fur Color"
-            placeholder="Optional"
-            value={color}
-            onChangeText={setColor}
-            returnKeyType="next"
-            onSubmitEditing={() => behaviorRef.current && behaviorRef.current.focus && behaviorRef.current.focus()}
-            blurOnSubmit={false}
-          />
-          <CatInput
+          <View style={styles.attributeRow}>
+            <AttributePicker
+              ref={eyeRef}
+              label="Eye Color"
+              title="Select eye colors"
+              placeholder="Select up to 2 colors"
+              value={eye}
+              onChange={setEye}
+              options={EYE_COLOR_OPTIONS}
+              maxSelections={2}
+              containerStyle={styles.attributeColumn}
+            />
+            <AttributePicker
+              ref={colorRef}
+              label="Fur Color"
+              title="Select fur colors"
+              placeholder="Select up to 3 colors"
+              value={color}
+              onChange={setColor}
+              options={FUR_COLOR_OPTIONS}
+              maxSelections={3}
+              containerStyle={styles.attributeColumn}
+            />
+          </View>
+          <AttributePicker
             ref={behaviorRef}
             label="Behavior / Personality"
-            placeholder="Optional"
+            title="Select behavior"
+            placeholder="Choose 1 behavior"
             value={behavior}
-            onChangeText={setBehavior}
-            returnKeyType="next"
-            onSubmitEditing={() => locationRef.current && locationRef.current.focus && locationRef.current.focus()}
-            blurOnSubmit={false}
+            onChange={setBehavior}
+            options={BEHAVIOR_OPTIONS}
+            maxSelections={1}
+            showSwatches={false}
           />
 
 

@@ -83,15 +83,32 @@ export const CatProvider = ({ children }) => {
     return savePromise;
   };
 
-  const deleteCat = (catId) => {
-    const updatedCats = cats.filter((cat) => cat.id !== catId);
-    return saveCats(updatedCats);
-  };
+  const updateCat = async (catId, updatedCatData) => {
+    const deletions = [];
 
-  const updateCat = (catId, updatedCatData) => {
-    const updatedCats = cats.map((cat) =>
-      cat.id === catId ? { ...cat, ...updatedCatData } : cat
-    );
+    const updatedCats = cats.map((cat) => {
+      if (cat.id !== catId) return cat;
+
+      const oldImage = cat.imageUri;
+      const newImage = updatedCatData.imageUri;
+
+      if (
+        oldImage &&
+        newImage &&
+        oldImage !== newImage &&
+        oldImage.startsWith(FileSystem.documentDirectory)
+      ) {
+        deletions.push(safeDelete(oldImage));
+      }
+
+      return {
+        ...cat,
+        ...updatedCatData,
+      };
+    });
+
+    await Promise.all(deletions);
+
     return saveCats(updatedCats);
   };
 

@@ -10,7 +10,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from 'expo-file-system/legacy';
 import { saveImageToDest } from "../utils/fileUtils";
 import { safeLaunchImageLibraryAsync, safeLaunchCameraAsync } from "../utils/safeImagePicker";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -24,6 +24,7 @@ import { useCats } from "../CatContext";
 import EncounterCard from "../components/EncounterCard";
 import styles, { colors } from "../styles";
 import { scale, moderateScale, verticalScale } from '../scaling';
+import { BEHAVIOR_OPTIONS, EYE_COLOR_OPTIONS, FUR_COLOR_OPTIONS, splitSelections } from "../utils/catAttributes";
 
 //COMPONENT
 export default function CatDetailScreen({ route, navigation }) {
@@ -77,7 +78,7 @@ export default function CatDetailScreen({ route, navigation }) {
     setEditModalVisible(true);
   };
 
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = async () => {    
     let finalImageUri = editableImageUri;
 
     try {
@@ -102,6 +103,14 @@ export default function CatDetailScreen({ route, navigation }) {
 
         try {
           const persisted = await saveImageToDest(manipulatedImage, dest);
+          
+          //Verify the file exists
+          const info = await FileSystem.getInfoAsync(persisted);
+
+          if (!info.exists){
+            throw new Error("Persisted cat image was not found after saving.")
+          }
+
           finalImageUri = persisted;
         } catch (e) {
           console.error('Failed to persist edited cat image, will fall back to original uri', e);
@@ -111,14 +120,20 @@ export default function CatDetailScreen({ route, navigation }) {
       console.error('Error while processing edited image:', e);
     }
 
-    await updateCat(catId, {
-      name: editableName,
-      eye: editableEye,
-      color: editableColor,
-      behavior: editableBehavior,
-      imageUri: finalImageUri,
-    });
-    setEditModalVisible(false);
+    try {
+      await updateCat(catId, {
+        name: editableName,
+        eye: editableEye,
+        color: editableColor,
+        behavior: editableBehavior,
+        imageUri: finalImageUri,
+      });
+
+      setEditModalVisible(false);
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Failed to save changes.");
+    }
   };
 
   const handleDelete = () => {
@@ -143,6 +158,21 @@ export default function CatDetailScreen({ route, navigation }) {
       ]
     );
   };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <TouchableOpacity onPress={handleEdit} style={{ marginRight: scale(18) }}>
+            <Ionicons name="create-outline" size={moderateScale(24)} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleDelete}>
+            <Ionicons name="trash-outline" size={moderateScale(24)} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      ),
+    });
+  }, [navigation, catId, editableName, editableEye, editableColor, editableBehavior, editableImageUri]);
 
   //HANDLER: IMAGE PICKER (EDIT MODAL)
   const handleImagePicker = async (setImage) => {
@@ -203,6 +233,42 @@ export default function CatDetailScreen({ route, navigation }) {
   };
 
   //UI HELPERS
+  const renderValueChips = (value, options, showSwatches = true) => {
+    const selected = splitSelections(value);
+
+    if (selected.length === 0) {
+      return <Text style={styles.detailRowValue}>N/A</Text>;
+    }
+
+    const optionMap = new Map(options.map((option) => [option.name, option]));
+
+    return (
+      <View style={styles.detailValueWrap}>
+        {selected.map((item) => {
+          const option = optionMap.get(item);
+          return (
+            <View key={item} style={styles.detailChip}>
+              {showSwatches && option?.hex ? (
+                <View style={[styles.detailChipDot, { backgroundColor: option.hex }]} />
+              ) : null}
+              <Text style={styles.detailChipText}>{item}</Text>
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
+
+  const renderDetailRow = (iconName, label, value, options, showSwatches = true) => (
+    <View style={styles.detailRow}>
+      <View style={styles.detailRowLeft}>
+        <Ionicons name={iconName} size={moderateScale(18)} color={colors.subtleText} />
+        <Text style={styles.detailRowLabel}>{label}</Text>
+      </View>
+      {renderValueChips(value, options, showSwatches)}
+    </View>
+  );
+
   const renderHeader = () => (
     <View style={styles.sectionPadding}>
       <Image
@@ -220,29 +286,11 @@ export default function CatDetailScreen({ route, navigation }) {
       {/*CAT INFO*/}
         <View style={styles.catHeader}>
           <Text style={styles.detailTitle}>{cat.name}</Text>
-
-          {/*ACTION ICONS*/}
-          <View style={styles.catHeaderActions}>
-            <TouchableOpacity onPress={handleDelete} style={{ marginBottom: verticalScale(8) }}>
-              <Ionicons name="trash-outline" size={moderateScale(24)} color={colors.danger} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleEdit}>
-              <Ionicons name="create-outline" size={moderateScale(24)} color={colors.text} />
-            </TouchableOpacity>
-          </View>
         </View>
 
-        <Text style={styles.detailText}>
-          <Text style={{ fontWeight: "bold" }}>Eye Color:</Text> {cat.eye || "N/A"}
-        </Text>
-
-        <Text style={styles.detailText}>
-          <Text style={{ fontWeight: "bold" }}>Fur Color:</Text> {cat.color || "N/A"}
-        </Text>
-
-        <Text style={styles.detailText}>
-          <Text style={{ fontWeight: "bold" }}>Behavior:</Text> {cat.behavior || "N/A"}
-        </Text>
+        {renderDetailRow("eye-outline", "Eye Color", cat.eye, EYE_COLOR_OPTIONS)}
+        {renderDetailRow("color-palette-outline", "Fur Color", cat.color, FUR_COLOR_OPTIONS)}
+        {renderDetailRow("heart-outline", "Behavior", cat.behavior, BEHAVIOR_OPTIONS, false)}
 
         <View>
           <Text style={styles.sectionTitle}>Encounters</Text>
